@@ -183,7 +183,7 @@
             <!-- AbuCoder自定义模块 -->
             <dependency>
                 <groupId>com.ruoyi</groupId>
-                <artifactId>ruoyi-abuwx</artifactId>
+                <artifactId>ruoyi-main</artifactId>
                 <version>${ruoyi.version}</version>
             </dependency>
 
@@ -204,7 +204,7 @@
         <module>ruoyi-quartz</module>
         <module>ruoyi-generator</module>
         <module>ruoyi-common</module>
-        <module>ruoyi-abuwx</module>
+        <module>ruoyi-main</module>
     </modules>
     <packaging>pom</packaging>
 

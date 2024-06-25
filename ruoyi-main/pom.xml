@@ -9,9 +9,9 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>ruoyi-abuwx</artifactId>
+    <artifactId>ruoyi-main</artifactId>
 
-    <description>微信小程序</description>
+    <description>应用</description>
 
     <dependencies>
         <!-- 通用工具 -->
