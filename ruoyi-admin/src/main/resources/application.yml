@@ -9,7 +9,7 @@ ruoyi:
   # 实例演示开关
   demoEnabled: true
   # 文件路径 示例（ Windows配置D:/ruoyi/uploadPath，Linux配置 /home/ruoyi/uploadPath）
-  profile: D:/ruoyi/uploadPath
+  profile: C:\Users\DELL\Desktop
 #  profile: /home/ruoyi/uploadPath
   # 获取ip地址开关
   addressEnabled: false
@@ -52,9 +52,9 @@ spring:
   servlet:
      multipart:
        # 单个文件大小
-       max-file-size:  10MB
+       max-file-size:  1024MB
        # 设置总上传的文件大小
-       max-request-size:  20MB
+       max-request-size:  2048MB
   # 服务模块
   devtools:
     restart:
@@ -90,16 +90,16 @@ token:
     # 令牌密钥
     secret: abcdefghijklmnopqrstuvwxyz
     # 令牌有效期（默认30分钟）
-    expireTime: 30
+    expireTime: 1440
   
 #MyBatis配置
 #mybatis:
-#    # 搜索指定包别名
-#    typeAliasesPackage: com.ruoyi.**.domain
-#    # 配置mapper的扫描，找到所有的mapper.xml映射文件
-#    mapperLocations: classpath*:mapper/**/*Mapper.xml
-#    # 加载全局的配置文件
-#    configLocation: classpath:mybatis/mybatis-config.xml
+    # 搜索指定包别名
+    typeAliasesPackage: com.ruoyi.**.domain
+    # 配置mapper的扫描，找到所有的mapper.xml映射文件
+    mapperLocations: classpath*:mapper/**/*Mapper.xml
+    # 加载全局的配置文件
+    configLocation: classpath:mybatis/mybatis-config.xml
 mybatis-plus:
   # 对应的 XML 文件位置
   mapperLocations: classpath*:mapper/**/*Mapper.xml
