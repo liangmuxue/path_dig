@@ -429,6 +429,13 @@ public class ExcelUtil<T>
         return exportExcel();
     }
 
+    //
+    public AjaxResult exportExcel(List<T> list, String sheetName, String title,String f)
+    {
+        this.init(list, sheetName, title, Type.EXPORT);
+        return exportExcel(f);
+    }
+
     /**
      * 对list数据源将其里面的数据导入到excel表单
      * 
@@ -544,6 +551,29 @@ public class ExcelUtil<T>
             writeSheet();
             String filename = encodingFilename(sheetName);
             out = new FileOutputStream(getAbsoluteFile(filename));
+            wb.write(out);
+            return AjaxResult.success(filename);
+        }
+        catch (Exception e)
+        {
+            log.error("导出Excel异常{}", e.getMessage());
+            throw new UtilException("导出Excel失败，请联系网站管理员！");
+        }
+        finally
+        {
+            IOUtils.closeQuietly(wb);
+            IOUtils.closeQuietly(out);
+        }
+    }
+
+    public AjaxResult exportExcel(String f)
+    {
+        OutputStream out = null;
+        try
+        {
+            writeSheet();
+            String filename = encodingFilename(sheetName);
+            out = new FileOutputStream(getExportAbsoluteFile(filename,f));
             wb.write(out);
             return AjaxResult.success(filename);
         }
@@ -1098,6 +1128,17 @@ public class ExcelUtil<T>
     public String getAbsoluteFile(String filename)
     {
         String downloadPath = RuoYiConfig.getDownloadPath() + filename;
+        File desc = new File(downloadPath);
+        if (!desc.getParentFile().exists())
+        {
+            desc.getParentFile().mkdirs();
+        }
+        return downloadPath;
+    }
+
+    public String getExportAbsoluteFile(String filename,String f)
+    {
+        String downloadPath = RuoYiConfig.getExportDownloadPath(f) + filename;
         File desc = new File(downloadPath);
         if (!desc.getParentFile().exists())
         {

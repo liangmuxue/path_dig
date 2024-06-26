@@ -52,7 +52,7 @@
         <!-- AbuCoder自定义模块 -->
         <dependency>
             <groupId>com.ruoyi</groupId>
-            <artifactId>ruoyi-abuwx</artifactId>
+            <artifactId>ruoyi-main</artifactId>
         </dependency>
 
         <!-- 定时任务-->
@@ -96,7 +96,7 @@
                 </configuration>   
            </plugin>   
         </plugins>
-        <finalName>${project.artifactId}</finalName>
+        <finalName>path-dig</finalName>
     </build>
 
 </project>

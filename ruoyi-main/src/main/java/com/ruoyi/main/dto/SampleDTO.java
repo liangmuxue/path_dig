@@ -1,23 +1,11 @@
-package com.ruoyi.main.domain;
+package com.ruoyi.main.dto;
 
-import lombok.Data;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
 import com.ruoyi.common.annotation.Excel;
-import com.ruoyi.common.core.domain.BaseEntity;
+import lombok.Data;
 
-import java.util.Date;
-import java.util.List;
-
-/**
- * 样本管理对象 sample
- * 
- * @author ruoyi
- * @date 2024-06-25
- */
 @Data
-public class Sample
-{
+public class SampleDTO {
+
     private static final long serialVersionUID = 1L;
 
     /** $column.columnComment */
@@ -28,16 +16,16 @@ public class Sample
     private String sampleId;
 
     /** 样本注册时间 */
+    @Excel(name = "样本注册时间")
     private Long registrationTime;
 
     /** 录检医生Id */
+    @Excel(name = "录检医生")
     private Long doctor;
 
     /** 状态报告 0未生成 1已生成 */
+    @Excel(name = "状态报告 0未生成 1已生成")
     private Integer state;
-
-    @Excel(name = "状态报告")
-    private String stateName;
 
     /** 样本源文件 */
     @Excel(name = "样本源文件")
@@ -51,12 +39,9 @@ public class Sample
     @Excel(name = "备注")
     private String note;
 
-    @Excel(name = "录检医生")
-    private String doctorName;
+    private Long startTime;
 
-    private String ids;
+    private Long endTime;
 
-    @Excel(name = "样本注册时间")
-    private String registrationDate;
 
 }

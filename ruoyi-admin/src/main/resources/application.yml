@@ -10,6 +10,7 @@ ruoyi:
   demoEnabled: true
   # 文件路径 示例（ Windows配置D:/ruoyi/uploadPath，Linux配置 /home/ruoyi/uploadPath）
   profile: C:\Users\DELL\Desktop
+#  download: /home/program/path-dig/file/download/
 #  profile: /home/ruoyi/uploadPath
   # 获取ip地址开关
   addressEnabled: false

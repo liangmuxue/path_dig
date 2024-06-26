@@ -2,6 +2,8 @@ package com.ruoyi.main.mapper;
 
 import java.util.List;
 import com.ruoyi.main.domain.Sample;
+import com.ruoyi.main.dto.SampleDTO;
+import org.apache.ibatis.annotations.Param;
 
 /**
  * 样本管理Mapper接口
@@ -58,4 +60,8 @@ public interface SampleMapper
      * @return 结果
      */
     public int deleteSampleByIds(Long[] ids);
+
+    List<Sample>  selectSampleDTOList(SampleDTO sampleDTO);
+
+    List<Sample> selectSampleListByIds(String ids);
 }

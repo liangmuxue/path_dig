@@ -125,6 +125,12 @@ public class RuoYiConfig
         return getProfile() + "/download/";
     }
 
+    //样本下载到文件夹下
+    public static String getExportDownloadPath(String folder)
+    {
+        return getProfile() + "/download/" + folder +"/";
+    }
+
     /**
      * 获取上传路径
      */

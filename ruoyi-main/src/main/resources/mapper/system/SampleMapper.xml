@@ -10,12 +10,13 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="registrationTime"    column="registration_time"    />
         <result property="doctor"    column="doctor"    />
         <result property="state"    column="state"    />
+        <result property="svs"    column="svs"    />
         <result property="pic"    column="pic"    />
         <result property="note"    column="note"    />
     </resultMap>
 
     <sql id="selectSampleVo">
-        select id, sample_id, registration_time, doctor, state, pic, note from sample
+        select id, sample_id, registration_time, doctor, state, pic, note,svs from sample
     </sql>
 
     <select id="selectSampleList" parameterType="Sample" resultMap="SampleResult">
@@ -28,13 +29,35 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="pic != null  and pic != ''"> and pic = #{pic}</if>
             <if test="note != null  and note != ''"> and note = #{note}</if>
         </where>
+        order by registration_time desc
     </select>
     
     <select id="selectSampleById" parameterType="Long" resultMap="SampleResult">
         <include refid="selectSampleVo"/>
         where id = #{id}
     </select>
-        
+    <select id="selectSampleDTOList" resultMap="SampleResult">
+        <include refid="selectSampleVo"/>
+        <where>
+            <if test="sampleId != null and sampleId != ''">and sample_id like concat('%', #{sampleId}, '%')</if>
+            <if test="doctor != null  and doctor != ''"> and doctor = #{doctor}</if>
+            <if test="state != null "> and state = #{state}</if>
+            <if test="pic != null  and pic != ''"> and pic = #{pic}</if>
+            <if test="note != null  and note != ''"> and note = #{note}</if>
+            <if test="startTime != null and startTime != ''">
+                AND  <![CDATA[registration_time >= #{startTime}]]>
+            </if>
+            <if test="endTime != null and endTime != ''">
+                AND  <![CDATA[registration_time <= #{endTime}]]>
+            </if>
+        </where>
+        order by registration_time desc
+    </select>
+    <select id="selectSampleListByIds" resultMap="SampleResult">
+        <include refid="selectSampleVo"/>
+        where FIND_IN_SET(id,#{ids})
+    </select>
+
     <insert id="insertSample" parameterType="Sample" useGeneratedKeys="true" keyProperty="id">
         insert into sample
         <trim prefix="(" suffix=")" suffixOverrides=",">
@@ -44,6 +67,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="state != null">state,</if>
             <if test="pic != null">pic,</if>
             <if test="note != null">note,</if>
+            <if test="svs != null">svs,</if>
          </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             <if test="sampleId != null">#{sampleId},</if>
@@ -52,6 +76,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="state != null">#{state},</if>
             <if test="pic != null">#{pic},</if>
             <if test="note != null">#{note},</if>
+            <if test="svs != null">#{svs},</if>
          </trim>
     </insert>
 
@@ -64,6 +89,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="state != null">state = #{state},</if>
             <if test="pic != null">pic = #{pic},</if>
             <if test="note != null">note = #{note},</if>
+            <if test="svs != null">svs = #{svs},</if>
         </trim>
         where id = #{id}
     </update>

@@ -1,7 +1,13 @@
 package com.ruoyi.main.service;
 
 import java.util.List;
+
+import com.github.pagehelper.PageInfo;
 import com.ruoyi.main.domain.Sample;
+import com.ruoyi.main.dto.SampleDTO;
+import org.springframework.web.multipart.MultipartFile;
+
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * 样本管理Service接口
@@ -58,4 +64,12 @@ public interface ISampleService
      * @return 结果
      */
     public int deleteSampleById(Long id);
+
+    PageInfo<Sample> page(SampleDTO sampleDTO, int num, int size);
+
+    List<Sample> selectSampleListByIds(String ids);
+
+    void export(HttpServletResponse response, Sample sample);
+
+    String svsExport(HttpServletResponse response, Sample sample);
 }
