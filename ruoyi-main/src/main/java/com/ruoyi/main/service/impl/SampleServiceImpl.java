@@ -21,26 +21,13 @@ import java.io.*;
 import java.net.URL;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import com.ruoyi.common.config.RuoYiConfig;
-import com.ruoyi.common.core.domain.AjaxResult;
-import com.ruoyi.common.utils.PageUtils;
-import com.ruoyi.common.utils.StringUtils;
-import com.ruoyi.common.utils.file.FileUploadUtils;
-import com.ruoyi.common.utils.file.FileUtils;
 import com.ruoyi.framework.config.ServerConfig;
 import com.ruoyi.main.dto.SampleDTO;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.ruoyi.main.mapper.SampleMapper;
 import com.ruoyi.main.domain.Sample;
 import com.ruoyi.main.service.ISampleService;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
-import org.springframework.web.multipart.MultipartFile;
+
 
 import java.io.*;
 import java.nio.file.*;
@@ -98,6 +85,9 @@ public class SampleServiceImpl implements ISampleService
     @Override
     public int insertSample(Sample sample)
     {
+        if(sample.getType()==1){
+            sample.setSave(1);
+        }
         sample.setState(0);
         sample.setRegistrationTime(System.currentTimeMillis());
         int i = sampleMapper.insertSample(sample);
@@ -196,16 +186,18 @@ public class SampleServiceImpl implements ISampleService
             }
         }
         list.stream().forEach(a->{
-            // 获取实际文件的URL
-            String fileUrl = a.getSvs();
-            // 构建下载文件的本地路径和文件名
-            String fileName = folderPath + getFileNameFromUrl(fileUrl);
-            try {
-                // 下载文件到指定路径
-                downloadFile(fileUrl, fileName);
-                System.out.println("文件已下载到：" + fileName);
-            } catch (IOException e) {
-                e.printStackTrace();
+            if(a.getSvs()!=null){
+                // 获取实际文件的URL
+                String fileUrl = a.getSvs();
+                // 构建下载文件的本地路径和文件名
+                String fileName = folderPath + getFileNameFromUrl(fileUrl);
+                try {
+                    // 下载文件到指定路径
+                    downloadFile(fileUrl, fileName);
+                    System.out.println("文件已下载到：" + fileName);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         });
         list.stream().forEach(a->{
@@ -270,6 +262,16 @@ public class SampleServiceImpl implements ISampleService
             e.printStackTrace();
         }
         return serverConfig.getUrl() + "/profile/download/" + timestamp + ".zip";
+    }
+
+    @Override
+    public List<Sample> selectNotSave() {
+        return sampleMapper.selectNotSave();
+    }
+
+    @Override
+    public void delSvs(Long id) {
+         sampleMapper.delSvs(id);
     }
 
 

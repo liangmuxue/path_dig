@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.main.mapper.ReportTypeMapper">
+    
+    <resultMap type="com.ruoyi.main.domain.ReportType" id="ReportTypeResult">
+        <result property="id"    column="id"    />
+        <result property="reportId"    column="report_id"    />
+        <result property="type"    column="type"    />
+        <result property="location"    column="location"    />
+    </resultMap>
+
+    <sql id="selectReportTypeVo">
+        select id, report_id, type, location from report_type
+    </sql>
+
+    <select id="selectReportTypeList" parameterType="com.ruoyi.main.domain.ReportType" resultMap="ReportTypeResult">
+        <include refid="selectReportTypeVo"/>
+        <where>  
+            <if test="reportId != null "> and report_id = #{reportId}</if>
+            <if test="type != null  and type != ''"> and type = #{type}</if>
+            <if test="location != null  and location != ''"> and location = #{location}</if>
+        </where>
+    </select>
+    
+    <select id="selectReportTypeById" parameterType="Long" resultMap="ReportTypeResult">
+        <include refid="selectReportTypeVo"/>
+        where id = #{id}
+    </select>
+        
+    <insert id="insertReportType" parameterType="com.ruoyi.main.domain.ReportType" useGeneratedKeys="true" keyProperty="id">
+        insert into report_type
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="reportId != null">report_id,</if>
+            <if test="type != null">type,</if>
+            <if test="location != null">location,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="reportId != null">#{reportId},</if>
+            <if test="type != null">#{type},</if>
+            <if test="location != null">#{location},</if>
+         </trim>
+    </insert>
+
+    <update id="updateReportType" parameterType="com.ruoyi.main.domain.ReportType">
+        update report_type
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="reportId != null">report_id = #{reportId},</if>
+            <if test="type != null">type = #{type},</if>
+            <if test="location != null">location = #{location},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteReportTypeById" parameterType="Long">
+        delete from report_type where id = #{id}
+    </delete>
+
+    <delete id="deleteReportTypeByIds" parameterType="String">
+        delete from report_type where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

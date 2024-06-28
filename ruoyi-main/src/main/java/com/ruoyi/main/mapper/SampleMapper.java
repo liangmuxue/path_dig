@@ -64,4 +64,8 @@ public interface SampleMapper
     List<Sample>  selectSampleDTOList(SampleDTO sampleDTO);
 
     List<Sample> selectSampleListByIds(String ids);
+
+    List<Sample> selectNotSave();
+
+    void delSvs(Long id);
 }

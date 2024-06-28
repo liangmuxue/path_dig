@@ -59,4 +59,10 @@ public class Sample
     @Excel(name = "样本注册时间")
     private String registrationDate;
 
+    /** 来源 样本库0 ai本地1 */
+    private Integer type;
+
+    /** 保存源文件 1不保存 */
+    private Integer save;
+
 }

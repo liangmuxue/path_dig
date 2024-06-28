@@ -4,14 +4,30 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 
+import java.io.IOException;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.ruoyi.common.config.RuoYiConfig;
+import com.ruoyi.common.utils.StringUtils;
+import com.ruoyi.common.utils.file.FileUploadUtils;
+import com.ruoyi.common.utils.file.FileUtils;
+import com.ruoyi.framework.config.ServerConfig;
 import com.ruoyi.main.dto.SampleDTO;
 import com.ruoyi.system.service.ISysUserService;
+import org.apache.http.util.EntityUtils;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +40,7 @@ import com.ruoyi.main.domain.Sample;
 import com.ruoyi.main.service.ISampleService;
 import com.ruoyi.common.utils.poi.ExcelUtil;
 import com.ruoyi.common.core.page.TableDataInfo;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * 样本管理Controller
@@ -39,6 +56,9 @@ public class SampleController extends BaseController
     private ISampleService sampleService;
     @Resource
     private ISysUserService sysUserService;
+    @Resource
+    private ServerConfig serverConfig;
+    private static final String FILE_DELIMETER = ",";
 
     /**
      * 查询样本管理列表
@@ -84,12 +104,12 @@ public class SampleController extends BaseController
         sampleService.export(response,sample);
     }
 
-    //导出svs
+    //样本管理--批量导出
     @PostMapping("/svsExport")
-    public String svsExport(HttpServletResponse response,@RequestBody Sample sample)
+    public AjaxResult svsExport(HttpServletResponse response,@RequestBody Sample sample)
     {
-//        sampleService.svsExport(response,sample);
-        return sampleService.svsExport(response,sample);
+        String result = sampleService.svsExport(response,sample);
+        return AjaxResult.success(result);
     }
 
     /**
@@ -148,5 +168,130 @@ public class SampleController extends BaseController
     public AjaxResult remove(@PathVariable Long[] ids)
     {
         return toAjax(sampleService.deleteSampleByIds(ids));
+    }
+
+
+    /**
+     * 通用上传请求（单个）
+     */
+    @PostMapping("/upload")
+    public AjaxResult uploadFile(MultipartFile file) throws Exception
+    {
+        try
+        {
+            // 上传文件路径
+            String filePath = RuoYiConfig.getUploadPath();
+            // 上传并返回新文件名称
+            String fileName = FileUploadUtils.upload(filePath, file);
+            String url = serverConfig.getUrl() + fileName;
+            AjaxResult ajax = AjaxResult.success();
+            ajax.put("url", url);
+            ajax.put("fileName", fileName);
+            ajax.put("newFileName", FileUtils.getName(fileName));
+            ajax.put("originalFilename", file.getOriginalFilename());
+//            //上传给算法
+//            // 构建请求的JSON参数
+//            String jsonBody = "{\"svs_path\": \"" + url + "\"}";
+//
+//            // 设置请求的URL和Content-Type
+//            String api = "http://192.168.0.98:8088/download_svs_file";
+//            String contentType = "application/json";
+//
+//            try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+//                // 创建HttpPost请求
+//                HttpPost httpPost = new HttpPost(api);
+//
+//                // 设置请求的Content-Type
+//                httpPost.setHeader("Content-Type", contentType);
+//
+//                // 设置请求的JSON参数
+//                StringEntity jsonEntity = new StringEntity(jsonBody, ContentType.APPLICATION_JSON);
+//                httpPost.setEntity(jsonEntity);
+//
+//                // 执行请求并获取响应
+//                HttpResponse response = httpClient.execute(httpPost);
+//
+//                // 处理响应
+//                HttpEntity responseEntity = response.getEntity();
+//                if (responseEntity != null) {
+//                    String responseString = EntityUtils.toString(responseEntity);
+//                    System.out.println("Response from server: " + responseString);
+//                    // 在这里处理服务器返回的响应数据
+//                }
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+            return ajax;
+        }
+        catch (Exception e)
+        {
+            return AjaxResult.error(e.getMessage());
+        }
+    }
+
+    @PostMapping("/uploads")
+    public AjaxResult uploadFiles(List<MultipartFile> files) throws Exception
+    {
+        try
+        {
+            // 上传文件路径
+            String filePath = RuoYiConfig.getUploadPath();
+            List<String> urls = new ArrayList<String>();
+            List<String> fileNames = new ArrayList<String>();
+            List<String> newFileNames = new ArrayList<String>();
+            List<String> originalFilenames = new ArrayList<String>();
+            for (MultipartFile file : files)
+            {
+                // 上传并返回新文件名称
+                String fileName = FileUploadUtils.upload(filePath, file);
+                String url = serverConfig.getUrl() + fileName;
+                urls.add(url);
+                fileNames.add(fileName);
+                newFileNames.add(FileUtils.getName(fileName));
+                originalFilenames.add(file.getOriginalFilename());
+            }
+            AjaxResult ajax = AjaxResult.success();
+            ajax.put("urls", StringUtils.join(urls, FILE_DELIMETER));
+            ajax.put("fileNames", StringUtils.join(fileNames, FILE_DELIMETER));
+            ajax.put("newFileNames", StringUtils.join(newFileNames, FILE_DELIMETER));
+            ajax.put("originalFilenames", StringUtils.join(originalFilenames, FILE_DELIMETER));
+//            //上传给算法
+//            // 构建请求的JSON参数
+//            String jsonBody = "{\"svs_path\": \"" + urls + "\"}";
+//
+//            // 设置请求的URL和Content-Type
+//            String api = "http://192.168.0.98:8088/download_svs_file";
+//            String contentType = "application/json";
+//
+//            try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+//                // 创建HttpPost请求
+//                HttpPost httpPost = new HttpPost(api);
+//
+//                // 设置请求的Content-Type
+//                httpPost.setHeader("Content-Type", contentType);
+//
+//                // 设置请求的JSON参数
+//                StringEntity jsonEntity = new StringEntity(jsonBody, ContentType.APPLICATION_JSON);
+//                httpPost.setEntity(jsonEntity);
+//
+//                // 执行请求并获取响应
+//                HttpResponse response = httpClient.execute(httpPost);
+//
+//                // 处理响应
+//                HttpEntity responseEntity = response.getEntity();
+//                if (responseEntity != null) {
+//                    String responseString = EntityUtils.toString(responseEntity);
+//                    System.out.println("Response from server: " + responseString);
+//                    // 在这里处理服务器返回的响应数据
+//                }
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+            return ajax;
+        }
+        catch (Exception e)
+        {
+            return AjaxResult.error(e.getMessage());
+        }
     }
 }

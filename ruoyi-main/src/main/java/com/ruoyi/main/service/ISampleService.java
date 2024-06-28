@@ -72,4 +72,8 @@ public interface ISampleService
     void export(HttpServletResponse response, Sample sample);
 
     String svsExport(HttpServletResponse response, Sample sample);
+
+    List<Sample> selectNotSave();
+
+    void delSvs(Long id);
 }

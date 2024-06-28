@@ -43,5 +43,10 @@ public class SampleDTO {
 
     private Long endTime;
 
+    /** 来源 样本库0 ai本地1 */
+    private Integer type;
+
+    /** 保存源文件 1不保存 */
+    private Integer save;
 
 }
