@@ -1,9 +1,12 @@
 package com.ruoyi.system.service;
 
-import java.util.List;
-import java.util.Set;
+import com.alibaba.fastjson2.JSONObject;
+import com.github.pagehelper.PageInfo;
 import com.ruoyi.common.core.domain.entity.SysRole;
 import com.ruoyi.system.domain.SysUserRole;
+
+import java.util.List;
+import java.util.Set;
 
 /**
  * 角色业务层
@@ -170,4 +173,18 @@ public interface ISysRoleService
      * @return 结果
      */
     public int insertAuthUsers(Long roleId, Long[] userIds);
+
+    int insertResourceRole(JSONObject role);
+
+    JSONObject detail(JSONObject role);
+
+    Integer updateResourceRole(JSONObject role);
+
+    List<SysRole> getAll(Integer isConditionQuery);
+
+    PageInfo<SysRole> listRoleAndResource(SysRole role, Integer pageNum, Integer pageSize);
+
+    void  selectRoleResourceRef(List<SysRole> list);
+
+    int deleteRoleAndResource(JSONObject jsonObject);
 }
