@@ -43,7 +43,11 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <include refid="selectSampleReportVo"/>
         where id = #{id}
     </select>
-        
+    <select id="checkHaveReport" resultType="java.lang.Integer">
+        select count(id) from sample_report
+        where sample_pid = #{samplePid}
+    </select>
+
     <insert id="insertSampleReport" parameterType="com.ruoyi.main.domain.SampleReport" useGeneratedKeys="true" keyProperty="id">
         insert into sample_report
         <trim prefix="(" suffix=")" suffixOverrides=",">
@@ -101,5 +105,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <foreach item="id" collection="array" open="(" separator="," close=")">
             #{id}
         </foreach>
+    </delete>
+    <delete id="deleteSampleReportBySamplePid">
+        delete from sample_report where sample_pid = #{samplePid}
     </delete>
 </mapper>

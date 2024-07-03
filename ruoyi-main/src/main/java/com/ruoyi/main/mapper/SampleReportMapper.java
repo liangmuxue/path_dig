@@ -58,4 +58,8 @@ public interface SampleReportMapper
      * @return 结果
      */
     public int deleteSampleReportByIds(Long[] ids);
+
+    int checkHaveReport(SampleReport sampleReport);
+
+    void deleteSampleReportBySamplePid(SampleReport sampleReport);
 }

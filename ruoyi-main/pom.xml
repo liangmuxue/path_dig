@@ -61,6 +61,11 @@
             <version>2.13.1</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.github.openslide</groupId>
+            <artifactId>openslide-java</artifactId>
+            <version>0.13.0</version>
+        </dependency>
     </dependencies>
 
 </project>

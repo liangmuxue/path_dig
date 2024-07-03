@@ -1,12 +1,8 @@
 package com.ruoyi.main.domain;
 
 import lombok.Data;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
 import com.ruoyi.common.annotation.Excel;
-import com.ruoyi.common.core.domain.BaseEntity;
 
-import java.util.Date;
 
 /**
  * ai诊断分析对象 sample_report

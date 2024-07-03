@@ -80,12 +80,15 @@ public class SampleReportServiceImpl implements ISampleReportService
     public int insertSampleReport(SampleReport sampleReport)
     {
         Sample sample = sampleMapper.selectSampleById(sampleReport.getSamplePid());
+        if(sample.getSvs()==null){
+            return -1;
+        }
         // 先上传给算法
         // 构建请求的JSON参数
-        String jsonBody = "{\"svs_path\": \"" + sample.getSvs() + "\"}";
-
+        String jsonBody = "{\"svs_path\": \"" + sample.getSvs() + "\", \"sampleId\": \"" + sample.getSampleId() + "\"}";
+        System.out.println("jsonBody = " + jsonBody);
         // 设置请求的URL和Content-Type
-        String api = "http://192.168.0.98:8088/download_svs_file";
+        String api = "http://192.168.0.98:8088/upload_svs_file";
         String contentType = "application/json";
 
         try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
@@ -111,6 +114,9 @@ public class SampleReportServiceImpl implements ISampleReportService
             }
         } catch (IOException e) {
             e.printStackTrace();
+        }
+        if(sampleReportMapper.checkHaveReport(sampleReport)!=0){//覆盖原来的报告
+            sampleReportMapper.deleteSampleReportBySamplePid(sampleReport);
         }
         sampleReport.setSamplePid(sample.getId());
         sampleReport.setSampleId(sample.getSampleId());
