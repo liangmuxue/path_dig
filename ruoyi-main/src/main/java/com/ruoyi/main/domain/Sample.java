@@ -1,7 +1,7 @@
 package com.ruoyi.main.domain;
 
-import lombok.Data;
 import com.ruoyi.common.annotation.Excel;
+import lombok.Data;
 
 
 /**
@@ -37,6 +37,10 @@ public class Sample
     /** 样本源文件 */
     @Excel(name = "样本源文件")
     private String svs;
+
+    /** 样本源文件路径 */
+    @Excel(name = "样本源文件路径")
+    private String svsPath;
 
     /** 样本图片 */
     @Excel(name = "样本图片")

@@ -3,22 +3,21 @@ package com.ruoyi.main.service.impl;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.List;
-import com.ruoyi.common.utils.DateUtils;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ruoyi.main.domain.Sample;
 import com.ruoyi.main.mapper.SampleMapper;
+import com.ruoyi.main.vo.AfterUploadVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.ruoyi.main.mapper.SampleReportMapper;
 import com.ruoyi.main.domain.SampleReport;
 import com.ruoyi.main.service.ISampleReportService;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
 import javax.annotation.Resource;
-import javax.servlet.http.HttpServletResponse;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPost;
@@ -77,15 +76,17 @@ public class SampleReportServiceImpl implements ISampleReportService
      * @return 结果
      */
     @Override
-    public int insertSampleReport(SampleReport sampleReport)
+    public AfterUploadVo insertSampleReport(SampleReport sampleReport)
     {
+        AfterUploadVo afterUploadVo = new AfterUploadVo();
         Sample sample = sampleMapper.selectSampleById(sampleReport.getSamplePid());
         if(sample.getSvs()==null){
-            return -1;
+            afterUploadVo.setError(-1);
+            return afterUploadVo;
         }
         // 先上传给算法
         // 构建请求的JSON参数
-        String jsonBody = "{\"svs_path\": \"" + sample.getSvs() + "\", \"sampleId\": \"" + sample.getSampleId() + "\"}";
+        String jsonBody = "{\"svs_path\": \"" + sample.getSvsPath() + "\", \"sampleId\": \"" + sample.getSampleId() + "\"}";
         System.out.println("jsonBody = " + jsonBody);
         // 设置请求的URL和Content-Type
         String api = "http://192.168.0.98:8088/upload_svs_file";
@@ -111,19 +112,24 @@ public class SampleReportServiceImpl implements ISampleReportService
                 String responseString = EntityUtils.toString(responseEntity);
                 System.out.println("Response from server: " + responseString);
                 // 在这里处理服务器返回的响应数据
+                ObjectMapper objectMapper = new ObjectMapper();
+                afterUploadVo = objectMapper.readValue(responseString, AfterUploadVo.class);
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
-        if(sampleReportMapper.checkHaveReport(sampleReport)!=0){//覆盖原来的报告
-            sampleReportMapper.deleteSampleReportBySamplePid(sampleReport);
+        if(afterUploadVo.getError()==0){//文件上传成功
+            if(sampleReportMapper.checkHaveReport(sampleReport)!=0){//覆盖原来的报告
+                sampleReportMapper.deleteSampleReportBySamplePid(sampleReport);
+            }
+            sampleReport.setSamplePid(sample.getId());
+            sampleReport.setSampleId(sample.getSampleId());
+            sampleReport.setAiTime(System.currentTimeMillis());
+            sampleReport.setUpdateTime(sampleReport.getAiTime());
+            sampleReport.setState(0l);
+            sampleReportMapper.insertSampleReport(sampleReport);
         }
-        sampleReport.setSamplePid(sample.getId());
-        sampleReport.setSampleId(sample.getSampleId());
-        sampleReport.setAiTime(System.currentTimeMillis());
-        sampleReport.setUpdateTime(sampleReport.getAiTime());
-        sampleReport.setState(0l);
-        return sampleReportMapper.insertSampleReport(sampleReport);
+        return afterUploadVo;
     }
 
     public void send() {
@@ -214,4 +220,11 @@ public class SampleReportServiceImpl implements ISampleReportService
     {
         return sampleReportMapper.deleteSampleReportById(id);
     }
+
+    @Override
+    public SampleReport selectSampleReportBySampleId(String sampleId) {
+        return sampleReportMapper.selectSampleReportBySampleId(sampleId);
+    }
+
+
 }

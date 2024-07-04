@@ -7,8 +7,10 @@ import java.util.List;
 @Data
 public class PointsVo {
 
-    private byte[] image;
+    private List<List<Integer>> ais;
 
-    private String[] corr;
+    private List<List<Integer>> hsil;
+
+    private List<List<Integer>> lsil;
 
 }

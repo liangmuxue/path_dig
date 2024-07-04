@@ -96,8 +96,18 @@ public class SampleJobServiceImpl implements ISampleJobService
     }
 
     @Override
-    public int checkBeforeAnalysis(SampleReport sampleReport) {
-        return sampleJobMapper.checkBeforeAnalysis(sampleReport);
+    public int checkBeforeAnalysis() {
+        return sampleJobMapper.checkBeforeAnalysis();
+    }
+
+    @Override
+    public int updateAfterStageSend(SampleJob sampleJob) {
+        return sampleJobMapper.updateAfterStageSend(sampleJob);
+    }
+
+    @Override
+    public void deleteSampleJobBySampleId(String sampleId) {
+        sampleJobMapper.deleteSampleJobBySampleId(sampleId);
     }
 
 

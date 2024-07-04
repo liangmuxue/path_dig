@@ -58,4 +58,6 @@ public interface IReportTypeService
      * @return 结果
      */
     public int deleteReportTypeById(Long id);
+
+    List<ReportType> selectReportTypeByReportId(Long id);
 }

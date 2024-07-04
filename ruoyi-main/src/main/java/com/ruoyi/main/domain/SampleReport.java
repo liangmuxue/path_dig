@@ -3,6 +3,8 @@ package com.ruoyi.main.domain;
 import lombok.Data;
 import com.ruoyi.common.annotation.Excel;
 
+import java.util.List;
+
 
 /**
  * ai诊断分析对象 sample_report
@@ -62,5 +64,10 @@ public class SampleReport
     @Excel(name = "审核状态 0未审核 1已审核")
     private Long state;
 
+    private String picOne;
+
+    private String picTwo;
+
+    private List<ReportType> typeList;
 
 }

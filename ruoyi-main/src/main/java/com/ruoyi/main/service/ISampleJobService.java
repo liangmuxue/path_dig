@@ -60,5 +60,9 @@ public interface ISampleJobService
      */
     public int deleteSampleJobById(Long id);
 
-    int checkBeforeAnalysis(SampleReport sampleReport);
+    int checkBeforeAnalysis();
+
+    int updateAfterStageSend(SampleJob sampleJob);
+
+    void deleteSampleJobBySampleId(String sampleId);
 }

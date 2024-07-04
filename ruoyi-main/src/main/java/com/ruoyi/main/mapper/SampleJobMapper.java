@@ -60,5 +60,9 @@ public interface SampleJobMapper
      */
     public int deleteSampleJobByIds(Long[] ids);
 
-    int checkBeforeAnalysis(SampleReport sampleReport);
+    int checkBeforeAnalysis();
+
+    int updateAfterStageSend(SampleJob sampleJob);
+
+    void deleteSampleJobBySampleId(String sampleId);
 }

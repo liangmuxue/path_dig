@@ -9,10 +9,11 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="reportId"    column="report_id"    />
         <result property="type"    column="type"    />
         <result property="location"    column="location"    />
+        <result property="pic"    column="pic"    />
     </resultMap>
 
     <sql id="selectReportTypeVo">
-        select id, report_id, type, location from report_type
+        select id, report_id, type, location,pic from report_type
     </sql>
 
     <select id="selectReportTypeList" parameterType="com.ruoyi.main.domain.ReportType" resultMap="ReportTypeResult">
@@ -21,6 +22,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="reportId != null "> and report_id = #{reportId}</if>
             <if test="type != null  and type != ''"> and type = #{type}</if>
             <if test="location != null  and location != ''"> and location = #{location}</if>
+            <if test="pic != null  and pic != ''"> and pic = #{pic}</if>
         </where>
     </select>
     
@@ -28,18 +30,24 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <include refid="selectReportTypeVo"/>
         where id = #{id}
     </select>
-        
+    <select id="selectReportTypeByReportId" resultMap="ReportTypeResult">
+        <include refid="selectReportTypeVo"/>
+        where report_id = #{id}
+    </select>
+
     <insert id="insertReportType" parameterType="com.ruoyi.main.domain.ReportType" useGeneratedKeys="true" keyProperty="id">
         insert into report_type
         <trim prefix="(" suffix=")" suffixOverrides=",">
             <if test="reportId != null">report_id,</if>
             <if test="type != null">type,</if>
             <if test="location != null">location,</if>
+            <if test="pic != null">pic,</if>
          </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             <if test="reportId != null">#{reportId},</if>
             <if test="type != null">#{type},</if>
             <if test="location != null">#{location},</if>
+            <if test="pic != null">#{pic},</if>
          </trim>
     </insert>
 
@@ -49,6 +57,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="reportId != null">report_id = #{reportId},</if>
             <if test="type != null">type = #{type},</if>
             <if test="location != null">location = #{location},</if>
+            <if test="pic != null">pic = #{pic},</if>
         </trim>
         where id = #{id}
     </update>

@@ -62,4 +62,6 @@ public interface SampleReportMapper
     int checkHaveReport(SampleReport sampleReport);
 
     void deleteSampleReportBySamplePid(SampleReport sampleReport);
+
+    SampleReport selectSampleReportBySampleId(String sampleId);
 }

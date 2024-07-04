@@ -26,14 +26,18 @@ public class SampleJob
 
     /** 样本号 */
     @Excel(name = "样本号")
-    private Long sampleId;
+    private String sampleId;
 
-    /** 任务状态0进行中 -1失败 1完成  */
-    @Excel(name = "任务状态0进行中 -1失败 1完成 ")
+    /** 任务状态 0文件正在分析
+     1ais模型推理完成
+     2hsil模型推理完成
+     3lsil模型推理完成
+     4推理结果处理完成，样本有效
+     5.推理结果处理完成，样本模糊无效 */
     private Long state;
 
     /** 任务时间 */
     @Excel(name = "任务时间")
-    private String time;
+    private Long time;
 
 }

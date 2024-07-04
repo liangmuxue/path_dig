@@ -67,6 +67,12 @@ public class SampleJobController extends BaseController
         return AjaxResult.success(sampleJobService.selectSampleJobById(id));
     }
 
+    //py->java阶段更新分析任务的状态
+    @PostMapping("/stageSend")
+    public AjaxResult stageSend(@RequestBody SampleJob sampleJob)
+    {
+        return toAjax(sampleJobService.updateAfterStageSend(sampleJob));
+    }
 
     /**
      * 新增样本分析job

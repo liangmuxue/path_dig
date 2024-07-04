@@ -2,6 +2,7 @@ package com.ruoyi.main.service;
 
 import java.util.List;
 import com.ruoyi.main.domain.SampleReport;
+import com.ruoyi.main.vo.AfterUploadVo;
 
 /**
  * ai诊断分析Service接口
@@ -33,7 +34,7 @@ public interface ISampleReportService
      * @param sampleReport ai诊断分析
      * @return 结果
      */
-    public int insertSampleReport(SampleReport sampleReport);
+    public AfterUploadVo insertSampleReport(SampleReport sampleReport);
 
     /**
      * 修改ai诊断分析
@@ -59,4 +60,5 @@ public interface ISampleReportService
      */
     public int deleteSampleReportById(Long id);
 
+    SampleReport selectSampleReportBySampleId(String sampleId);
 }

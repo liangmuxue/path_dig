@@ -7,17 +7,27 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
+import java.util.Map;
 import javax.annotation.Resource;
 import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletResponse;
 
+import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.gson.Gson;
+import com.ruoyi.main.domain.ReportType;
+import com.ruoyi.main.domain.Sample;
+import com.ruoyi.main.domain.SampleJob;
+import com.ruoyi.main.mapper.SampleMapper;
+import com.ruoyi.main.service.IReportTypeService;
 import com.ruoyi.main.service.ISampleJobService;
-import com.ruoyi.main.vo.Image2;
+import com.ruoyi.main.vo.AfterUploadVo;
 import com.ruoyi.main.vo.ReportResultVo;
+import com.ruoyi.main.vo.ResultRecipientVo;
 import com.ruoyi.main.vo.StageSendVo;
+import org.apache.poi.ss.usermodel.ConditionalFormattingThreshold;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -50,6 +60,10 @@ public class SampleReportController extends BaseController
     private ISampleReportService sampleReportService;
     @Resource
     private ISampleJobService sampleJobService;
+    @Resource
+    private SampleMapper sampleMapper;
+    @Resource
+    private IReportTypeService reportTypeService;
     /**
      * 查询ai诊断分析列表
      */
@@ -162,41 +176,36 @@ public class SampleReportController extends BaseController
     @PostMapping
     public AjaxResult add(@RequestBody SampleReport sampleReport)
     {
+        Sample sample = sampleMapper.selectSampleById(sampleReport.getSamplePid());
         //分析前检查当前是否可以进行分析
-        int count = sampleJobService.checkBeforeAnalysis(sampleReport);
+        int count = sampleJobService.checkBeforeAnalysis();
         if(count>0){
             return AjaxResult.error("已有样本在进行分析中,请稍后再试");
         }
+        sampleReport.setSamplePid(sample.getId());
         sampleReport.setInspectDoctor(getUserId());
-        if(sampleReportService.insertSampleReport(sampleReport)==-1){
+        SampleJob sampleJob = new SampleJob();
+        AfterUploadVo afterUploadVo = sampleReportService.insertSampleReport(sampleReport);
+        if(afterUploadVo.getError()==-1){
             return AjaxResult.error("该样本没有源文件,无法分析");
+        }else if(afterUploadVo.getError()==0){//------成功
+            sampleJob.setTime(System.currentTimeMillis());
+            sampleJob.setState(0l);//初始状态
+            sampleJob.setSampleId(sample.getSampleId());
+            sampleJob.setSamplePid(sample.getId());
+            sampleJobService.deleteSampleJobBySampleId(sampleJob.getSampleId());
+            sampleJobService.insertSampleJob(sampleJob);
+            return AjaxResult.success("文件上传成功");
+        }else if(afterUploadVo.getError()==1){
+            return AjaxResult.error("文件不存在");
+        }else if(afterUploadVo.getError()==2){
+            return AjaxResult.error("当前已有文件正在处理");
+        }else if(afterUploadVo.getError()==3){
+            return AjaxResult.error("当前状态异常");
         }
         return AjaxResult.success();
     }
 
-//    public static void main(String[] args) {
-//        File inputFile = new File("path/to/your/svs/file.svs");
-//        OpenSlide openSlide = new OpenSlide(inputFile);
-//
-//        // 获取瓦片的尺寸
-//        int tileSize = openSlide.getTileSize();
-//
-//        // 获取瓦片的总数
-//        int[] levelDimensions = openSlide.getLevelDimensions(0);
-//        int numXTiles = (int) Math.ceil((double) levelDimensions[0] / tileSize);
-//        int numYTiles = (int) Math.ceil((double) levelDimensions[1] / tileSize);
-//
-//        // 逐个获取瓦片并保存
-//        for (int y = 0; y < numYTiles; y++) {
-//            for (int x = 0; x < numXTiles; x++) {
-//                BufferedImage tile = openSlide.getTile(0, x * tileSize, y * tileSize);
-//                File outputFile = new File("output/directory/tile_" + x + "_" + y + ".png");
-//                ImageIO.write(tile, "png", outputFile);
-//            }
-//        }
-//
-//        openSlide.close();
-//    }
 
     /**
      * send回信息有结果了调用result拿分析结果
@@ -247,28 +256,56 @@ public class SampleReportController extends BaseController
                 in.close();
                 // 打印响应内容
                 System.out.println("Response Content : " + response.toString());
-                Image2 image2 = mapper.readValue(response.toString(), Image2.class);
+                ResultRecipientVo resultRecipientVo = mapper.readValue(response.toString(), ResultRecipientVo.class);
 
-                // 将 JSON 字符串转换为对象
-//                ReportResultVo reportResultVo = mapper.readValue(response.toString(), ReportResultVo.class);
-//                reportResultVo.getImage().stream().forEach(s->{
-//                    s.getAis().stream().forEach(a->{
-//                        image(a.getImage());
-//                    });
-//                    s.getLsil().stream().forEach(a->{
-//                        image(a.getImage());
-//                    });
-//                    s.getHsil().stream().forEach(a->{
-//                        image(a.getImage());
-//                    });
-//                });
+                //拿到对象接收的结果
+                SampleReport report = sampleReportService.selectSampleReportBySampleId(sampleReport.getSampleId());
+                Map<String, List<int[]>> boxes = resultRecipientVo.getBoxes();
+                Gson gson = new Gson();
+                List<int[]> lsilBoxes = boxes.get("lsil");
+                if (lsilBoxes != null) {
+                    ReportType reportType = new ReportType();
+                    reportType.setType("lsil");
+                    reportType.setReportId(report.getId());
+                    for (int[] box : lsilBoxes) {
+                        String json = gson.toJson(box);
+                        reportType.setLocation(json);
+                        reportTypeService.insertReportType(reportType);
+                    }
+                }
+                List<int[]> hsilBoxes = boxes.get("hsil");
+                if (hsilBoxes != null) {
+                    ReportType reportType = new ReportType();
+                    reportType.setType("hsil");
+                    reportType.setReportId(report.getId());
+                    for (int[] box : hsilBoxes) {
+                        String json = gson.toJson(box);
+                        reportType.setLocation(json);
+                        reportTypeService.insertReportType(reportType);
+                    }
+                }
+                List<int[]> aisBoxes = boxes.get("ais");
+                if (aisBoxes != null) {
+                    ReportType reportType = new ReportType();
+                    reportType.setType("ais");
+                    reportType.setReportId(report.getId());
+                    for (int[] box : aisBoxes) {
+                        String json = gson.toJson(box);
+                        reportType.setLocation(json);
+                        reportTypeService.insertReportType(reportType);
+                    }
+                }
+                report.setAiDiagnosis(resultRecipientVo.getCategory());
+                report.setAiTime(System.currentTimeMillis());
+                report.setUpdateTime(report.getAiTime());
+                report.setQuality(1);//有效样本
+                //还有两张图
+                sampleReportService.updateSampleReport(report);//更新报告
+
                 // 设置 AjaxResult 的返回值
                 ajaxResult.put("code",200);
-                ajaxResult.put("msg",image2);
-                // 图片保存路径
-                String savePath = "C:\\Users\\DELL\\Desktop\\ruoyi\\"+System.currentTimeMillis()+".jpg";
-                saveImage(image2.getImages(), savePath);
-                System.out.println("image2 = " +  image2.getBox().toString());
+                ajaxResult.put("msg",resultRecipientVo);
+
             } else {
                 System.out.println("POST request not worked");
                 ajaxResult.put("code",responseCode);
@@ -284,24 +321,16 @@ public class SampleReportController extends BaseController
         return ajaxResult;
     }
 
-    public static void saveImage(String base64Image, String path) {
-        try {
-            // 解码Base64数据
-            byte[] imageBytes = Base64.getDecoder().decode(base64Image);
-            // 写入文件
-            try (FileOutputStream fos = new FileOutputStream(path)) {
-                fos.write(imageBytes);
-                System.out.println("图片保存成功：" + path);
-            } catch (IOException e) {
-                System.out.println("保存图片时发生错误：" + e.getMessage());
-            }
-
-        } catch (IllegalArgumentException e) {
-            System.out.println("Base64 编码的图片数据无效：" + e.getMessage());
-        }
+    /**
+     * 获取ai诊断分析详细信息
+     */
+    @GetMapping("/getReport")
+    public AjaxResult getReport(String sampleId)
+    {
+        SampleReport sampleReport = sampleReportService.selectSampleReportBySampleId(sampleId);
+        sampleReport.setTypeList(reportTypeService.selectReportTypeByReportId(sampleReport.getId()));
+        return AjaxResult.success(sampleReport);
     }
-
-
 
     /**
      * 修改ai诊断分析

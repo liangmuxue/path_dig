@@ -17,10 +17,13 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="reportTime"    column="report_time"    />
         <result property="updateTime"    column="update_time"    />
         <result property="state"    column="state"    />
+        <result property="picOne"    column="picOne"    />
+        <result property="picTwo"    column="picTwo"    />
     </resultMap>
 
     <sql id="selectSampleReportVo">
-        select id, sample_pid, quality, sample_id, ai_diagnosis, doctor_diagnosis, inspect_doctor, verify_doctor, ai_time, report_time, update_time, state from sample_report
+        select id, sample_pid, quality, sample_id, ai_diagnosis, doctor_diagnosis, inspect_doctor, verify_doctor, ai_time,
+               report_time, update_time, state,picOne,picTwo from sample_report
     </sql>
 
     <select id="selectSampleReportList" parameterType="com.ruoyi.main.domain.SampleReport" resultMap="SampleReportResult">
@@ -47,6 +50,10 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         select count(id) from sample_report
         where sample_pid = #{samplePid}
     </select>
+    <select id="selectSampleReportBySampleId" resultMap="SampleReportResult">
+        <include refid="selectSampleReportVo"/>
+        where sample_id = #{sampleId}
+    </select>
 
     <insert id="insertSampleReport" parameterType="com.ruoyi.main.domain.SampleReport" useGeneratedKeys="true" keyProperty="id">
         insert into sample_report
@@ -62,6 +69,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="reportTime != null">report_time,</if>
             <if test="updateTime != null">update_time,</if>
             <if test="state != null">state,</if>
+            <if test="picOne != null">picOne,</if>
+            <if test="picTwo != null">picTwo,</if>
          </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             <if test="samplePid != null">#{samplePid},</if>
@@ -75,6 +84,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="reportTime != null">#{reportTime},</if>
             <if test="updateTime != null">#{updateTime},</if>
             <if test="state != null">#{state},</if>
+            <if test="picOne != null">#{picOne},</if>
+            <if test="picTwo != null">#{picTwo},</if>
          </trim>
     </insert>
 
@@ -92,6 +103,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="reportTime != null">report_time = #{reportTime},</if>
             <if test="updateTime != null">update_time = #{updateTime},</if>
             <if test="state != null">state = #{state},</if>
+            <if test="picOne != null">picOne = #{picOne},</if>
+            <if test="picTwo != null">picTwo = #{picTwo},</if>
         </trim>
         where id = #{id}
     </update>
