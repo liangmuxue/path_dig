@@ -2,6 +2,7 @@ package com.ruoyi.main.service;
 
 import java.util.List;
 import com.ruoyi.main.domain.SampleReport;
+import com.ruoyi.main.dto.SampleReportDTO;
 import com.ruoyi.main.vo.AfterUploadVo;
 
 /**
@@ -61,4 +62,6 @@ public interface ISampleReportService
     public int deleteSampleReportById(Long id);
 
     SampleReport selectSampleReportBySampleId(String sampleId);
+
+    List<SampleReport> selectSampleReportPageList(SampleReportDTO sampleReportDTO);
 }

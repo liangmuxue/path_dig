@@ -2,6 +2,7 @@ package com.ruoyi.main.mapper;
 
 import java.util.List;
 import com.ruoyi.main.domain.SampleReport;
+import com.ruoyi.main.dto.SampleReportDTO;
 
 /**
  * ai诊断分析Mapper接口
@@ -64,4 +65,6 @@ public interface SampleReportMapper
     void deleteSampleReportBySamplePid(SampleReport sampleReport);
 
     SampleReport selectSampleReportBySampleId(String sampleId);
+
+    List<SampleReport> selectSampleReportPageList(SampleReportDTO sampleReportDTO);
 }

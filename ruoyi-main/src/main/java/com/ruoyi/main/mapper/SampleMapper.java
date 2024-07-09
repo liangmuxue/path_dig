@@ -68,4 +68,6 @@ public interface SampleMapper
     List<Sample> selectNotSave();
 
     void delSvs(Long id);
+
+    Sample selectSampleBySampleId(String sampleId);
 }

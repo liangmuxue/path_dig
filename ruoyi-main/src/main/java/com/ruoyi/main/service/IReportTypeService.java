@@ -60,4 +60,6 @@ public interface IReportTypeService
     public int deleteReportTypeById(Long id);
 
     List<ReportType> selectReportTypeByReportId(Long id);
+
+    void deleteReportTypeByReport(Long id);
 }

@@ -6,6 +6,7 @@ import java.util.List;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ruoyi.main.domain.Sample;
+import com.ruoyi.main.dto.SampleReportDTO;
 import com.ruoyi.main.mapper.SampleMapper;
 import com.ruoyi.main.vo.AfterUploadVo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -86,7 +87,9 @@ public class SampleReportServiceImpl implements ISampleReportService
         }
         // 先上传给算法
         // 构建请求的JSON参数
-        String jsonBody = "{\"svs_path\": \"" + sample.getSvsPath() + "\", \"sampleId\": \"" + sample.getSampleId() + "\"}";
+        String saveUrl = "/home/program/path-dig/image/";
+        String jsonBody = "{\"svs_path\": \"" + sample.getSvsPath() + "\", \"sampleId\": \"" + sample.getSampleId() + "\", \"saveUrl\": \"" + saveUrl + "\"}";
+
         System.out.println("jsonBody = " + jsonBody);
         // 设置请求的URL和Content-Type
         String api = "http://192.168.0.98:8088/upload_svs_file";
@@ -224,6 +227,11 @@ public class SampleReportServiceImpl implements ISampleReportService
     @Override
     public SampleReport selectSampleReportBySampleId(String sampleId) {
         return sampleReportMapper.selectSampleReportBySampleId(sampleId);
+    }
+
+    @Override
+    public List<SampleReport> selectSampleReportPageList(SampleReportDTO sampleReportDTO) {
+        return sampleReportMapper.selectSampleReportPageList(sampleReportDTO);
     }
 
 

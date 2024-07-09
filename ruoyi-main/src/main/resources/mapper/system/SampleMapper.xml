@@ -66,6 +66,10 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <include refid="selectSampleVo"/>
         where save = 1
     </select>
+    <select id="selectSampleBySampleId" resultMap="SampleResult">
+        <include refid="selectSampleVo"/>
+        where sample_id = #{sampleId}
+    </select>
 
     <insert id="insertSample" parameterType="com.ruoyi.main.domain.Sample" useGeneratedKeys="true" keyProperty="id">
         insert into sample

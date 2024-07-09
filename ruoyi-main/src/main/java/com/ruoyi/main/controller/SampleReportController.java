@@ -4,10 +4,7 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import javax.annotation.Resource;
 import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletResponse;
@@ -20,13 +17,12 @@ import com.google.gson.Gson;
 import com.ruoyi.main.domain.ReportType;
 import com.ruoyi.main.domain.Sample;
 import com.ruoyi.main.domain.SampleJob;
+import com.ruoyi.main.dto.SampleReportDTO;
 import com.ruoyi.main.mapper.SampleMapper;
 import com.ruoyi.main.service.IReportTypeService;
 import com.ruoyi.main.service.ISampleJobService;
-import com.ruoyi.main.vo.AfterUploadVo;
-import com.ruoyi.main.vo.ReportResultVo;
-import com.ruoyi.main.vo.ResultRecipientVo;
-import com.ruoyi.main.vo.StageSendVo;
+import com.ruoyi.main.vo.*;
+import com.ruoyi.system.service.ISysUserService;
 import org.apache.poi.ss.usermodel.ConditionalFormattingThreshold;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -64,6 +60,8 @@ public class SampleReportController extends BaseController
     private SampleMapper sampleMapper;
     @Resource
     private IReportTypeService reportTypeService;
+    @Resource
+    private ISysUserService sysUserService;
     /**
      * 查询ai诊断分析列表
      */
@@ -72,6 +70,17 @@ public class SampleReportController extends BaseController
     {
         startPage();
         List<SampleReport> list = sampleReportService.selectSampleReportList(sampleReport);
+        return getDataTable(list);
+    }
+
+    /**
+     * 查询ai诊断分析列表--多条件分页查询
+     */
+    @GetMapping("/pageList")
+    public TableDataInfo pageList(SampleReportDTO sampleReportDTO)
+    {
+        startPage();
+        List<SampleReport> list = sampleReportService.selectSampleReportPageList(sampleReportDTO);
         return getDataTable(list);
     }
 
@@ -90,10 +99,20 @@ public class SampleReportController extends BaseController
     /**
      * 获取ai诊断分析详细信息
      */
-    @GetMapping(value = "/{id}")
-    public AjaxResult getInfo(@PathVariable("id") Long id)
+    @GetMapping("/getInfo")
+    public AjaxResult getInfo(Long id)
     {
-        return AjaxResult.success(sampleReportService.selectSampleReportById(id));
+        SampleReport sampleReport = sampleReportService.selectSampleReportById(id);
+        sampleReport.setInspectDoctorName(sysUserService.selectUserById(sampleReport.getInspectDoctor()).getNickName());
+        if(sampleReport.getVerifyDoctor()!=null){
+            sampleReport.setVerifyDoctorName(sysUserService.selectUserById(sampleReport.getVerifyDoctor()).getNickName());
+        }
+        if(sampleReport.getState()==0){
+            sampleReport.setStateName("未审核");
+        }else {
+            sampleReport.setStateName("已审核");
+        }
+        return AjaxResult.success(sampleReport);
     }
 
     //send到算法识别查状态
@@ -193,6 +212,7 @@ public class SampleReportController extends BaseController
             sampleJob.setState(0l);//初始状态
             sampleJob.setSampleId(sample.getSampleId());
             sampleJob.setSamplePid(sample.getId());
+            sampleJob.setDoctor(getUserId());
             sampleJobService.deleteSampleJobBySampleId(sampleJob.getSampleId());
             sampleJobService.insertSampleJob(sampleJob);
             return AjaxResult.success("文件上传成功");
@@ -270,6 +290,7 @@ public class SampleReportController extends BaseController
                     for (int[] box : lsilBoxes) {
                         String json = gson.toJson(box);
                         reportType.setLocation(json);
+                        reportType.setPic(picUrl(json,sampleReport.getSampleId(),"lsil"));
                         reportTypeService.insertReportType(reportType);
                     }
                 }
@@ -281,6 +302,7 @@ public class SampleReportController extends BaseController
                     for (int[] box : hsilBoxes) {
                         String json = gson.toJson(box);
                         reportType.setLocation(json);
+                        reportType.setPic(picUrl(json,sampleReport.getSampleId(),"hsil"));
                         reportTypeService.insertReportType(reportType);
                     }
                 }
@@ -292,6 +314,7 @@ public class SampleReportController extends BaseController
                     for (int[] box : aisBoxes) {
                         String json = gson.toJson(box);
                         reportType.setLocation(json);
+                        reportType.setPic(picUrl(json,sampleReport.getSampleId(),"ais"));
                         reportTypeService.insertReportType(reportType);
                     }
                 }
@@ -300,8 +323,15 @@ public class SampleReportController extends BaseController
                 report.setUpdateTime(report.getAiTime());
                 report.setQuality(1);//有效样本
                 //还有两张图
+                if(resultRecipientVo.getCategory()!=null){
+                    ReportType reportType = new ReportType();
+                    reportType.setReportId(report.getId());
+                    reportType.setType(resultRecipientVo.getCategory());
+                    List<ReportType> list = reportTypeService.selectReportTypeList(reportType);
+                    report.setPicOne(list.get(0).getPic());
+                    report.setPicTwo(list.get(1).getPic());
+                }
                 sampleReportService.updateSampleReport(report);//更新报告
-
                 // 设置 AjaxResult 的返回值
                 ajaxResult.put("code",200);
                 ajaxResult.put("msg",resultRecipientVo);
@@ -321,6 +351,91 @@ public class SampleReportController extends BaseController
         return ajaxResult;
     }
 
+    public String picUrl(String json,String sampleId,String model){
+        String save = "http://192.168.0.98:8092/"+sampleId+"/"+model+"/smallPic/"+json+".jpg";
+        return save;
+    }
+
+    /**
+     * 根据svs文件转jpg
+     */
+    @PostMapping("/svsTurnJpg")
+    public AjaxResult svsTurnJpg(@RequestBody SampleReport sampleReport)
+    {
+        AjaxResult ajaxResult = new AjaxResult();
+        sampleReport = sampleReportService.selectSampleReportBySampleId(sampleReport.getSampleId());
+        Sample sample = sampleMapper.selectSampleBySampleId(sampleReport.getSampleId());
+        if(sample.getSvs()==null){
+            return AjaxResult.error("源文件解析失败");
+        }
+        String saveUrl = "/home/program/path-dig/image/";
+        try {
+            // 构建请求体JSON
+            ObjectMapper mapper = new ObjectMapper();
+            ObjectNode requestBody = mapper.createObjectNode();
+            // 添加sampleId参数
+            requestBody.put("saveUrl", saveUrl);
+            requestBody.put("sampleId", sampleReport.getSampleId());
+
+            // 指定URL
+            URL url = new URL("http://192.168.0.98:8088/turnJpg");
+            // 创建HttpURLConnection对象
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            // 设置请求方法为POST
+            conn.setRequestMethod("POST");
+            // 设置请求头属性
+            conn.setRequestProperty("Content-Type", "application/json");
+            // 设置允许输出
+            conn.setDoOutput(true);
+
+            //有参数
+            try (OutputStream os = conn.getOutputStream()) {
+                byte[] input = requestBody.toString().getBytes("utf-8");
+                os.write(input, 0, input.length);
+            }
+
+            // 获取响应码
+            int responseCode = conn.getResponseCode();
+            System.out.println("Response Code : " + responseCode);
+            // 读取响应内容
+            if (responseCode == HttpURLConnection.HTTP_OK) { // 如果响应码是200
+                BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                String inputLine;
+                StringBuilder response = new StringBuilder();
+                while ((inputLine = in.readLine()) != null) {
+                    response.append(inputLine);
+                }
+                in.close();
+                // 打印响应内容
+                System.out.println("Response Content : " + response.toString());
+                SvsTurnJpgVo svsTurnJpgVo = mapper.readValue(response.toString(), SvsTurnJpgVo.class);
+                if(svsTurnJpgVo.getCode()==0){//有大图
+                    String save = "http://192.168.0.98:8092/"+sampleReport.getSampleId()+"/"+sampleReport.getSampleId()+".jpg";
+                    sampleReport.setPicBig(save);
+                    svsTurnJpgVo.setSave_big_path(save);
+                    //把大图放进报告
+                    sampleReportService.updateSampleReport(sampleReport);
+                    // 设置 AjaxResult 的返回值
+                    ajaxResult.put("code",200);
+                    ajaxResult.put("msg",svsTurnJpgVo);
+                }
+            } else {
+                System.out.println("POST request not worked");
+                ajaxResult.put("code",responseCode);
+                ajaxResult.put("msg", "POST request failed with response code: " + responseCode);
+            }
+            // 关闭连接
+            conn.disconnect();
+        } catch (Exception e) {
+            e.printStackTrace();
+            ajaxResult.put("code", 500); // Internal server error
+            ajaxResult.put("msg", "Internal server error: " + e.getMessage());
+        }
+        return ajaxResult;
+    }
+
+
+
     /**
      * 获取ai诊断分析详细信息
      */
@@ -328,7 +443,31 @@ public class SampleReportController extends BaseController
     public AjaxResult getReport(String sampleId)
     {
         SampleReport sampleReport = sampleReportService.selectSampleReportBySampleId(sampleId);
-        sampleReport.setTypeList(reportTypeService.selectReportTypeByReportId(sampleReport.getId()));
+        List<ReportType> list = reportTypeService.selectReportTypeByReportId(sampleReport.getId());
+        List<ReportType> lsil =new ArrayList<>();
+        List<ReportType> hsil =new ArrayList<>();
+        List<ReportType> ais =new ArrayList<>();
+        list.stream().forEach(a->{
+            if(a.getType().equals("lsil")){
+                lsil.add(a);
+            }else if(a.getType().equals("hsil")){
+                hsil.add(a);
+            }else if(a.getType().equals("ais")){
+                ais.add(a);
+            }
+        });
+        sampleReport.setLsilList(lsil);
+        sampleReport.setHsilList(hsil);
+        sampleReport.setAisList(ais);
+        sampleReport.setInspectDoctorName(sysUserService.selectUserById(sampleReport.getInspectDoctor()).getNickName());
+        if(sampleReport.getVerifyDoctor()!=null){
+            sampleReport.setVerifyDoctorName(sysUserService.selectUserById(sampleReport.getVerifyDoctor()).getNickName());
+        }
+        if(sampleReport.getState()==0){
+            sampleReport.setStateName("未审核");
+        }else {
+            sampleReport.setStateName("已审核");
+        }
         return AjaxResult.success(sampleReport);
     }
 
@@ -339,6 +478,21 @@ public class SampleReportController extends BaseController
     @PutMapping
     public AjaxResult edit(@RequestBody SampleReport sampleReport)
     {
+        sampleReport.setInspectDoctor(getUserId());
+        sampleReport.setUpdateTime(System.currentTimeMillis());
+        sampleReport.setReportTime(sampleReport.getUpdateTime());
+        return toAjax(sampleReportService.updateSampleReport(sampleReport));
+    }
+
+    /**
+     * 审核报告
+     */
+    @Log(title = "ai诊断分析", businessType = BusinessType.UPDATE)
+    @PutMapping("/verify")
+    public AjaxResult verify(@RequestBody SampleReport sampleReport)
+    {
+        sampleReport.setVerifyDoctor(getUserId());
+        sampleReport.setState(1l);
         return toAjax(sampleReportService.updateSampleReport(sampleReport));
     }
 
@@ -349,6 +503,10 @@ public class SampleReportController extends BaseController
 	@DeleteMapping("/{ids}")
     public AjaxResult remove(@PathVariable Long[] ids)
     {
-        return toAjax(sampleReportService.deleteSampleReportByIds(ids));
+        sampleReportService.deleteSampleReportByIds(ids);
+        for (int i = 0; i < ids.length; i++) {//同时删除小图
+            reportTypeService.deleteReportTypeByReport(ids[i]);
+        }
+        return AjaxResult.success();
     }
 }
