@@ -110,5 +110,10 @@ public class SampleJobServiceImpl implements ISampleJobService
         sampleJobMapper.deleteSampleJobBySampleId(sampleId);
     }
 
+    @Override
+    public SampleJob selectSampleJobBySamplePid(Long id) {
+        return sampleJobMapper.selectSampleJobBySamplePid(id);
+    }
+
 
 }

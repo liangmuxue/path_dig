@@ -65,4 +65,6 @@ public interface ISampleJobService
     int updateAfterStageSend(SampleJob sampleJob);
 
     void deleteSampleJobBySampleId(String sampleId);
+
+    SampleJob selectSampleJobBySamplePid(Long id);
 }

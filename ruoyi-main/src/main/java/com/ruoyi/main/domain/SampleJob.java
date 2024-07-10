@@ -40,6 +40,7 @@ public class SampleJob
     @Excel(name = "任务时间")
     private Long time;
 
+    private String stateMsg;
 
     private Long doctor;
 

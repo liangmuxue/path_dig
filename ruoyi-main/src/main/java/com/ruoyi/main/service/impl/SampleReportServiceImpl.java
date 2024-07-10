@@ -234,5 +234,10 @@ public class SampleReportServiceImpl implements ISampleReportService
         return sampleReportMapper.selectSampleReportPageList(sampleReportDTO);
     }
 
+    @Override
+    public SampleReport selectSampleReportBySamplePId(Long samplePid) {
+        return sampleReportMapper.selectSampleReportBySamplePId(samplePid);
+    }
+
 
 }

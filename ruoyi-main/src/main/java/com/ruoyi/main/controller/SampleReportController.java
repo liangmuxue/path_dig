@@ -234,6 +234,7 @@ public class SampleReportController extends BaseController
     @PostMapping("/getResult")
     public AjaxResult getResult(@RequestBody SampleReport sampleReport)
     {
+        sampleReport=sampleReportService.selectSampleReportBySamplePId(sampleReport.getSamplePid());
         AjaxResult ajaxResult = new AjaxResult();
         try {
             // 构建请求体JSON
@@ -440,9 +441,9 @@ public class SampleReportController extends BaseController
      * 获取ai诊断分析详细信息
      */
     @GetMapping("/getReport")
-    public AjaxResult getReport(String sampleId)
+    public AjaxResult getReport(Long samplePid)
     {
-        SampleReport sampleReport = sampleReportService.selectSampleReportBySampleId(sampleId);
+        SampleReport sampleReport = sampleReportService.selectSampleReportBySamplePId(samplePid);
         List<ReportType> list = reportTypeService.selectReportTypeByReportId(sampleReport.getId());
         List<ReportType> lsil =new ArrayList<>();
         List<ReportType> hsil =new ArrayList<>();

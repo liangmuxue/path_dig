@@ -67,4 +67,6 @@ public interface SampleReportMapper
     SampleReport selectSampleReportBySampleId(String sampleId);
 
     List<SampleReport> selectSampleReportPageList(SampleReportDTO sampleReportDTO);
+
+    SampleReport selectSampleReportBySamplePId(Long samplePid);
 }

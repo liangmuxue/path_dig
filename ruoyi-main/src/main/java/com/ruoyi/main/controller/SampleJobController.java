@@ -61,10 +61,29 @@ public class SampleJobController extends BaseController
     /**
      * 获取样本分析job详细信息
      */
-    @GetMapping(value = "/{id}")
-    public AjaxResult getInfo(@PathVariable("id") Long id)
+    @GetMapping("/getInfo")
+    public AjaxResult getInfo(Long id)
     {
-        return AjaxResult.success(sampleJobService.selectSampleJobById(id));
+        SampleJob sampleJob = sampleJobService.selectSampleJobBySamplePid(id);
+        if(sampleJob.getState()==0){
+            sampleJob.setStateMsg("文件正在分析");
+        }
+        if(sampleJob.getState()==1){
+            sampleJob.setStateMsg("ais模型推理完成");
+        }
+        if(sampleJob.getState()==2){
+            sampleJob.setStateMsg("hsil模型推理完成");
+        }
+        if(sampleJob.getState()==3){
+            sampleJob.setStateMsg("lsil模型推理完成");
+        }
+        if(sampleJob.getState()==4){
+            sampleJob.setStateMsg("推理结果处理完成，样本有效 ");
+        }
+        if(sampleJob.getState()==5){
+            sampleJob.setStateMsg("推理结果处理完成，样本模糊无效");
+        }
+        return AjaxResult.success(sampleJob);
     }
 
     //py->java阶段更新分析任务的状态
