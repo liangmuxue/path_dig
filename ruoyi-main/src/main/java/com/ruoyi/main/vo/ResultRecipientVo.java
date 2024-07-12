@@ -12,4 +12,6 @@ public class ResultRecipientVo {
 
     private Map<String, List<int[]>> boxes;
 
+    private String dizFileUrl;
+
 }

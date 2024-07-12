@@ -21,6 +21,7 @@ import com.ruoyi.main.dto.SampleReportDTO;
 import com.ruoyi.main.mapper.SampleMapper;
 import com.ruoyi.main.service.IReportTypeService;
 import com.ruoyi.main.service.ISampleJobService;
+import com.ruoyi.main.util.ExtractConfiguration;
 import com.ruoyi.main.vo.*;
 import com.ruoyi.system.service.ISysUserService;
 import org.apache.poi.ss.usermodel.ConditionalFormattingThreshold;
@@ -62,6 +63,8 @@ public class SampleReportController extends BaseController
     private IReportTypeService reportTypeService;
     @Resource
     private ISysUserService sysUserService;
+    @Resource
+    private ExtractConfiguration extractConfiguration;
     /**
      * 查询ai诊断分析列表
      */
@@ -115,7 +118,7 @@ public class SampleReportController extends BaseController
         return AjaxResult.success(sampleReport);
     }
 
-    //send到算法识别查状态
+    //send到算法识别查状态--弃用
     @PostMapping("/stageSend")
     public AjaxResult stageSend()
     {
@@ -195,6 +198,8 @@ public class SampleReportController extends BaseController
     @PostMapping
     public AjaxResult add(@RequestBody SampleReport sampleReport)
     {
+        String url = extractConfiguration.getSaveUrl();
+        System.out.println("url = " + url);
         Sample sample = sampleMapper.selectSampleById(sampleReport.getSamplePid());
         //分析前检查当前是否可以进行分析
         int count = sampleJobService.checkBeforeAnalysis();
@@ -278,7 +283,8 @@ public class SampleReportController extends BaseController
                 // 打印响应内容
                 System.out.println("Response Content : " + response.toString());
                 ResultRecipientVo resultRecipientVo = mapper.readValue(response.toString(), ResultRecipientVo.class);
-
+                //svs文件转瓦片图
+                resultRecipientVo.setDizFileUrl(extractConfiguration.getSaveUrl()+sampleReport.getSampleId()+"/"+sampleReport.getSampleId()+"/"+"_files");
                 //拿到对象接收的结果
                 SampleReport report = sampleReportService.selectSampleReportBySampleId(sampleReport.getSampleId());
                 Map<String, List<int[]>> boxes = resultRecipientVo.getBoxes();
@@ -434,7 +440,6 @@ public class SampleReportController extends BaseController
         }
         return ajaxResult;
     }
-
 
 
     /**

@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ruoyi.main.domain.Sample;
 import com.ruoyi.main.dto.SampleReportDTO;
 import com.ruoyi.main.mapper.SampleMapper;
+import com.ruoyi.main.util.ExtractConfiguration;
 import com.ruoyi.main.vo.AfterUploadVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -45,6 +46,8 @@ public class SampleReportServiceImpl implements ISampleReportService
     private SampleReportMapper sampleReportMapper;
     @Resource
     private SampleMapper sampleMapper;
+    @Resource
+    private ExtractConfiguration extractConfiguration;
 
     /**
      * 查询ai诊断分析
@@ -87,7 +90,8 @@ public class SampleReportServiceImpl implements ISampleReportService
         }
         // 先上传给算法
         // 构建请求的JSON参数
-        String saveUrl = "/home/program/path-dig/image/";
+        String saveUrl = extractConfiguration.getSaveUrl();
+//        String saveUrl = "/home/program/path-dig/image/";
         String jsonBody = "{\"svs_path\": \"" + sample.getSvsPath() + "\", \"sampleId\": \"" + sample.getSampleId() + "\", \"saveUrl\": \"" + saveUrl + "\"}";
 
         System.out.println("jsonBody = " + jsonBody);
