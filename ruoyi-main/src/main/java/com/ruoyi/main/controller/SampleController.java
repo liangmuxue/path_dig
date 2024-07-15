@@ -18,6 +18,8 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
+import java.util.Map;
+
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.ruoyi.common.config.RuoYiConfig;
@@ -72,12 +74,12 @@ public class SampleController extends BaseController
     }
 
     //分页查询
-    @GetMapping("/pageList")
-    public TableDataInfo pageList(SampleDTO sampleDTO, Integer pageNum, Integer pageSize)
+    @PostMapping("/pageList")
+    public TableDataInfo pageList(@RequestBody SampleDTO sampleDTO)
     {
-        PageHelper.startPage(pageNum, pageSize);
+        PageHelper.startPage(sampleDTO.getPageNum(), sampleDTO.getPageSize());
         // 调用你的 page 方法获取分页数据
-        PageInfo<Sample> pageInfo = sampleService.page(sampleDTO, pageNum, pageSize);
+        PageInfo<Sample> pageInfo = sampleService.page(sampleDTO, sampleDTO.getPageNum(), sampleDTO.getPageSize());
         List<Sample> sampleList = pageInfo.getList();
         sampleList.stream().forEach(a->{
             a.setDoctorName(sysUserService.selectUserById(a.getDoctor()).getNickName());
@@ -115,10 +117,10 @@ public class SampleController extends BaseController
     /**
      * 获取样本管理详细信息
      */
-    @GetMapping("/getInfo")
-    public AjaxResult getInfo(Long id)
+    @PostMapping("/getInfo")
+    public AjaxResult getInfo(@RequestBody Sample sample)
     {
-        Sample sample = sampleService.selectSampleById(id);
+        sample = sampleService.selectSampleById(sample.getId());
         sample.setDoctorName(sysUserService.selectUserById(sample.getDoctor()).getNickName());
         return AjaxResult.success(sample);
     }
@@ -154,7 +156,7 @@ public class SampleController extends BaseController
      * 修改样本管理
      */
     @Log(title = "样本管理", businessType = BusinessType.UPDATE)
-    @PutMapping
+    @PostMapping("/update")
     public AjaxResult edit(@RequestBody Sample sample)
     {
         return toAjax(sampleService.updateSample(sample));
@@ -163,12 +165,16 @@ public class SampleController extends BaseController
     /**
      * 删除样本管理
      */
-    @Log(title = "样本管理", businessType = BusinessType.DELETE)
-	@DeleteMapping("/{ids}")
-    public AjaxResult remove(@PathVariable Long[] ids)
-    {
+    @PostMapping("/delete")
+    public AjaxResult remove(@RequestBody Map<String, Long[]> requestBody) {
+        Long[] ids = requestBody.get("ids");
+        if (ids == null || ids.length == 0) {
+            // 如果 ids 为空或者长度为0，可以根据具体情况返回错误信息或者处理逻辑
+            return AjaxResult.error("未提供要删除的样本数据的ID");
+        }
         return toAjax(sampleService.deleteSampleByIds(ids));
     }
+
 
 
     /**

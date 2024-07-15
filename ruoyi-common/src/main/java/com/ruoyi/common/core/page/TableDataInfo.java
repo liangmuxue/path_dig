@@ -32,6 +32,7 @@ public class TableDataInfo implements Serializable {
     private String msg;
     private Integer totalPages;
 
+
     public Integer getTotalPages() {
         return totalPages;
     }

@@ -68,5 +68,9 @@ public class SampleReportDTO {
 
    private Long endTime;
 
+    private Integer pageNum;
+
+    private Integer pageSize;
+
 
 }

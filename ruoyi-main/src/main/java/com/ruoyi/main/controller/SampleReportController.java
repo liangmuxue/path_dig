@@ -79,7 +79,7 @@ public class SampleReportController extends BaseController
     /**
      * 查询ai诊断分析列表--多条件分页查询
      */
-    @GetMapping("/pageList")
+    @PostMapping("/pageList")
     public TableDataInfo pageList(SampleReportDTO sampleReportDTO)
     {
         startPage();
@@ -102,10 +102,10 @@ public class SampleReportController extends BaseController
     /**
      * 获取ai诊断分析详细信息
      */
-    @GetMapping("/getInfo")
-    public AjaxResult getInfo(Long id)
+    @PostMapping("/getInfo")
+    public AjaxResult getInfo(@RequestBody SampleReport sampleReport)
     {
-        SampleReport sampleReport = sampleReportService.selectSampleReportById(id);
+        sampleReport = sampleReportService.selectSampleReportById(sampleReport.getId());
         sampleReport.setInspectDoctorName(sysUserService.selectUserById(sampleReport.getInspectDoctor()).getNickName());
         if(sampleReport.getVerifyDoctor()!=null){
             sampleReport.setVerifyDoctorName(sysUserService.selectUserById(sampleReport.getVerifyDoctor()).getNickName());
@@ -445,9 +445,10 @@ public class SampleReportController extends BaseController
     /**
      * 获取ai诊断分析详细信息
      */
-    @GetMapping("/getReport")
-    public AjaxResult getReport(Long samplePid)
+    @PostMapping("/getReport")
+    public AjaxResult getReport(@RequestBody Map<String, Long> requestBody)
     {
+        Long samplePid = requestBody.get("samplePid");
         SampleReport sampleReport = sampleReportService.selectSampleReportBySamplePId(samplePid);
         List<ReportType> list = reportTypeService.selectReportTypeByReportId(sampleReport.getId());
         List<ReportType> lsil =new ArrayList<>();
@@ -481,7 +482,7 @@ public class SampleReportController extends BaseController
      * 修改ai诊断分析
      */
     @Log(title = "ai诊断分析", businessType = BusinessType.UPDATE)
-    @PutMapping
+    @PostMapping("/edit")
     public AjaxResult edit(@RequestBody SampleReport sampleReport)
     {
         sampleReport.setInspectDoctor(getUserId());
@@ -494,7 +495,7 @@ public class SampleReportController extends BaseController
      * 审核报告
      */
     @Log(title = "ai诊断分析", businessType = BusinessType.UPDATE)
-    @PutMapping("/verify")
+    @PostMapping("/verify")
     public AjaxResult verify(@RequestBody SampleReport sampleReport)
     {
         sampleReport.setVerifyDoctor(getUserId());
@@ -506,9 +507,14 @@ public class SampleReportController extends BaseController
      * 删除ai诊断分析
      */
     @Log(title = "ai诊断分析", businessType = BusinessType.DELETE)
-	@DeleteMapping("/{ids}")
-    public AjaxResult remove(@PathVariable Long[] ids)
+	@PostMapping("/delete")
+    public AjaxResult remove(@RequestBody Map<String, Long[]> requestBody)
     {
+        Long[] ids = requestBody.get("ids");
+        if (ids == null || ids.length == 0) {
+            // 如果 ids 为空或者长度为0，可以根据具体情况返回错误信息或者处理逻辑
+            return AjaxResult.error("未提供要删除的报告数据的ID");
+        }
         sampleReportService.deleteSampleReportByIds(ids);
         for (int i = 0; i < ids.length; i++) {//同时删除小图
             reportTypeService.deleteReportTypeByReport(ids[i]);

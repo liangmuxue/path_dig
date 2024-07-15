@@ -1,6 +1,7 @@
 package com.ruoyi.main.controller;
 
 import java.util.List;
+import java.util.Map;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -61,9 +62,10 @@ public class SampleJobController extends BaseController
     /**
      * 获取样本分析job详细信息
      */
-    @GetMapping("/getInfo")
-    public AjaxResult getInfo(Long id)
+    @PostMapping("/getInfo")
+    public AjaxResult getInfo(@RequestBody Map<String, Long> requestBody)
     {
+        Long id = requestBody.get("id");
         SampleJob sampleJob = sampleJobService.selectSampleJobBySamplePid(id);
         if(sampleJob.getState()==0){
             sampleJob.setStateMsg("文件正在分析");

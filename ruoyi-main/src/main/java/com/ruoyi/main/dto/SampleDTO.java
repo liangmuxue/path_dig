@@ -53,4 +53,7 @@ public class SampleDTO {
     /** 保存源文件 1不保存 */
     private Integer save;
 
+    private Integer pageNum;
+
+    private Integer pageSize;
 }
