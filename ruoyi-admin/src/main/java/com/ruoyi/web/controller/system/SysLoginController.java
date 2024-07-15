@@ -8,7 +8,6 @@ import com.ruoyi.common.core.domain.model.LoginBody;
 import com.ruoyi.common.utils.SecurityUtils;
 import com.ruoyi.framework.web.service.SysLoginService;
 import com.ruoyi.framework.web.service.SysPermissionService;
-import com.ruoyi.system.mapper.SysUserMapper;
 import com.ruoyi.system.service.ISysMenuService;
 import com.ruoyi.system.service.ISysUserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,8 +35,7 @@ public class SysLoginController
 
     @Autowired
     private SysPermissionService permissionService;
-    @Autowired
-    private SysUserMapper sysUserMapper;
+
     @Autowired
     private ISysUserService userService;
 
