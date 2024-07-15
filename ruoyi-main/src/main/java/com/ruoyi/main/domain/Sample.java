@@ -1,13 +1,8 @@
 package com.ruoyi.main.domain;
 
-import lombok.Data;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
 import com.ruoyi.common.annotation.Excel;
-import com.ruoyi.common.core.domain.BaseEntity;
+import lombok.Data;
 
-import java.util.Date;
-import java.util.List;
 
 /**
  * 样本管理对象 sample
@@ -42,6 +37,10 @@ public class Sample
     /** 样本源文件 */
     @Excel(name = "样本源文件")
     private String svs;
+
+    /** 样本源文件路径 */
+    @Excel(name = "样本源文件路径")
+    private String svsPath;
 
     /** 样本图片 */
     @Excel(name = "样本图片")

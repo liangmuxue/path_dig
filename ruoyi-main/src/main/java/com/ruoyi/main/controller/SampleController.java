@@ -184,43 +184,21 @@ public class SampleController extends BaseController
             // 上传并返回新文件名称
             String fileName = FileUploadUtils.upload(filePath, file);
             String url = serverConfig.getUrl() + fileName;
+
+            // 找到profile后面的字符串
+            String searchString = "profile/";
+            int index = fileName.indexOf(searchString);
+            // 找到了profile后的字符串起始位置
+            String profileString = fileName.substring(index + searchString.length());
+            System.out.println("提取的profile后的字符串为: " + profileString);
+            String path = "/home/program/path-dig/file/" + profileString;
+
             AjaxResult ajax = AjaxResult.success();
             ajax.put("url", url);
             ajax.put("fileName", fileName);
             ajax.put("newFileName", FileUtils.getName(fileName));
             ajax.put("originalFilename", file.getOriginalFilename());
-//            //上传给算法
-//            // 构建请求的JSON参数
-//            String jsonBody = "{\"svs_path\": \"" + url + "\"}";
-//
-//            // 设置请求的URL和Content-Type
-//            String api = "http://192.168.0.98:8088/download_svs_file";
-//            String contentType = "application/json";
-//
-//            try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
-//                // 创建HttpPost请求
-//                HttpPost httpPost = new HttpPost(api);
-//
-//                // 设置请求的Content-Type
-//                httpPost.setHeader("Content-Type", contentType);
-//
-//                // 设置请求的JSON参数
-//                StringEntity jsonEntity = new StringEntity(jsonBody, ContentType.APPLICATION_JSON);
-//                httpPost.setEntity(jsonEntity);
-//
-//                // 执行请求并获取响应
-//                HttpResponse response = httpClient.execute(httpPost);
-//
-//                // 处理响应
-//                HttpEntity responseEntity = response.getEntity();
-//                if (responseEntity != null) {
-//                    String responseString = EntityUtils.toString(responseEntity);
-//                    System.out.println("Response from server: " + responseString);
-//                    // 在这里处理服务器返回的响应数据
-//                }
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
+            ajax.put("path", path);
             return ajax;
         }
         catch (Exception e)
@@ -255,38 +233,6 @@ public class SampleController extends BaseController
             ajax.put("fileNames", StringUtils.join(fileNames, FILE_DELIMETER));
             ajax.put("newFileNames", StringUtils.join(newFileNames, FILE_DELIMETER));
             ajax.put("originalFilenames", StringUtils.join(originalFilenames, FILE_DELIMETER));
-//            //上传给算法
-//            // 构建请求的JSON参数
-//            String jsonBody = "{\"svs_path\": \"" + urls + "\"}";
-//
-//            // 设置请求的URL和Content-Type
-//            String api = "http://192.168.0.98:8088/download_svs_file";
-//            String contentType = "application/json";
-//
-//            try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
-//                // 创建HttpPost请求
-//                HttpPost httpPost = new HttpPost(api);
-//
-//                // 设置请求的Content-Type
-//                httpPost.setHeader("Content-Type", contentType);
-//
-//                // 设置请求的JSON参数
-//                StringEntity jsonEntity = new StringEntity(jsonBody, ContentType.APPLICATION_JSON);
-//                httpPost.setEntity(jsonEntity);
-//
-//                // 执行请求并获取响应
-//                HttpResponse response = httpClient.execute(httpPost);
-//
-//                // 处理响应
-//                HttpEntity responseEntity = response.getEntity();
-//                if (responseEntity != null) {
-//                    String responseString = EntityUtils.toString(responseEntity);
-//                    System.out.println("Response from server: " + responseString);
-//                    // 在这里处理服务器返回的响应数据
-//                }
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
             return ajax;
         }
         catch (Exception e)

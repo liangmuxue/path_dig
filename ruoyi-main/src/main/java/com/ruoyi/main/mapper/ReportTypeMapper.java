@@ -58,4 +58,8 @@ public interface ReportTypeMapper
      * @return 结果
      */
     public int deleteReportTypeByIds(Long[] ids);
+
+    List<ReportType> selectReportTypeByReportId(Long id);
+
+    void deleteReportTypeByReport(Long id);
 }

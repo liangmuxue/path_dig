@@ -32,4 +32,6 @@ public class ReportType
     @Excel(name = "定位")
     private String location;
 
+    private String pic;
+
 }

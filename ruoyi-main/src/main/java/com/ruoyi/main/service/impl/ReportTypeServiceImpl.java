@@ -92,4 +92,14 @@ public class ReportTypeServiceImpl implements IReportTypeService
     {
         return reportTypeMapper.deleteReportTypeById(id);
     }
+
+    @Override
+    public List<ReportType> selectReportTypeByReportId(Long id) {
+        return reportTypeMapper.selectReportTypeByReportId(id);
+    }
+
+    @Override
+    public void deleteReportTypeByReport(Long id) {
+        reportTypeMapper.deleteReportTypeByReport(id);
+    }
 }

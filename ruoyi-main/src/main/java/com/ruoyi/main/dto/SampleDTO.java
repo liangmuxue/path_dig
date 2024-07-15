@@ -31,6 +31,10 @@ public class SampleDTO {
     @Excel(name = "样本源文件")
     private String svs;
 
+    /** 样本源文件路径 */
+    @Excel(name = "样本源文件路径")
+    private String svsPath;
+
     /** 样本图片 */
     @Excel(name = "样本图片")
     private String pic;

@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.main.mapper.SampleJobMapper">
+    
+    <resultMap type="com.ruoyi.main.domain.SampleJob" id="SampleJobResult">
+        <result property="id"    column="id"    />
+        <result property="samplePid"    column="sample_pid"    />
+        <result property="sampleId"    column="sample_id"    />
+        <result property="state"    column="state"    />
+        <result property="time"    column="time"    />
+        <result property="doctor"    column="doctor"    />
+    </resultMap>
+    <sql id="selectSampleJobVo">
+        select id, sample_pid, sample_id, state, time,doctor from sample_job
+    </sql>
+
+    <select id="selectSampleJobList" parameterType="com.ruoyi.main.domain.SampleJob" resultMap="SampleJobResult">
+        <include refid="selectSampleJobVo"/>
+        <where>  
+            <if test="samplePid != null "> and sample_pid = #{samplePid}</if>
+            <if test="sampleId != null "> and sample_id = #{sampleId}</if>
+            <if test="state != null "> and state = #{state}</if>
+            <if test="time != null  and time != ''"> and time = #{time}</if>
+            <if test="doctor != null  and doctor != ''"> and doctor = #{doctor}</if>
+        </where>
+    </select>
+    
+    <select id="selectSampleJobById" parameterType="Long" resultMap="SampleJobResult">
+        <include refid="selectSampleJobVo"/>
+        where id = #{id}
+    </select>
+    <select id="checkBeforeAnalysis" resultType="java.lang.Integer">
+        select count(id) from sample_job where  state in (0,1,2,3)
+    </select>
+    <select id="selectSampleJobBySamplePid" resultMap="SampleJobResult">
+        <include refid="selectSampleJobVo"/>
+        where sample_pid = #{id}
+    </select>
+
+    <insert id="insertSampleJob" parameterType="com.ruoyi.main.domain.SampleJob" useGeneratedKeys="true" keyProperty="id">
+        insert into sample_job
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="samplePid != null">sample_pid,</if>
+            <if test="sampleId != null">sample_id,</if>
+            <if test="state != null">state,</if>
+            <if test="time != null">time,</if>
+            <if test="doctor != null">doctor,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="samplePid != null">#{samplePid},</if>
+            <if test="sampleId != null">#{sampleId},</if>
+            <if test="state != null">#{state},</if>
+            <if test="time != null">#{time},</if>
+            <if test="doctor != null">#{doctor},</if>
+         </trim>
+    </insert>
+
+    <update id="updateSampleJob" parameterType="com.ruoyi.main.domain.SampleJob">
+        update sample_job
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="samplePid != null">sample_pid = #{samplePid},</if>
+            <if test="sampleId != null">sample_id = #{sampleId},</if>
+            <if test="state != null">state = #{state},</if>
+            <if test="time != null">time = #{time},</if>
+            <if test="doctor != null">doctor = #{doctor},</if>
+        </trim>
+        where id = #{id}
+    </update>
+    <update id="updateAfterStageSend">
+        update sample_job set state = #{state} where sample_id = #{sampleId}
+    </update>
+
+    <delete id="deleteSampleJobById" parameterType="Long">
+        delete from sample_job where id = #{id}
+    </delete>
+
+    <delete id="deleteSampleJobByIds" parameterType="String">
+        delete from sample_job where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+    <delete id="deleteSampleJobBySampleId">
+        delete from sample_job where sample_id = #{sampleId}
+    </delete>
+</mapper>

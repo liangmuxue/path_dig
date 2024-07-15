@@ -1,20 +1,14 @@
-package com.ruoyi.main.domain;
+package com.ruoyi.main.dto;
 
-import lombok.Data;
 import com.ruoyi.common.annotation.Excel;
+import com.ruoyi.main.domain.ReportType;
+import lombok.Data;
 
 import java.util.List;
 
-
-/**
- * ai诊断分析对象 sample_report
- * 
- * @author ruoyi
- * @date 2024-06-27
- */
 @Data
-public class SampleReport
-{
+public class SampleReportDTO {
+
     private static final long serialVersionUID = 1L;
 
     /** $column.columnComment */
@@ -44,13 +38,9 @@ public class SampleReport
     @Excel(name = "录检医生")
     private Long inspectDoctor;
 
-    private String inspectDoctorName;
-
     /** 审核医生 */
     @Excel(name = "审核医生")
     private Long verifyDoctor;
-
-    private String verifyDoctorName;
 
     /** ai诊断日期 */
     @Excel(name = "ai诊断日期")
@@ -68,18 +58,15 @@ public class SampleReport
     @Excel(name = "审核状态 0未审核 1已审核")
     private Long state;
 
-    private String stateName;
-
     private String picOne;
 
     private String picTwo;
 
     private String picBig;
 
-    private List<ReportType> lsilList;
+   private Long startTime;
 
-    private List<ReportType> hsilList;
+   private Long endTime;
 
-    private List<ReportType> aisList;
 
 }

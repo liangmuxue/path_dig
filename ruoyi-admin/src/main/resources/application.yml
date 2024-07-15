@@ -204,3 +204,8 @@ xss:
   excludes: /system/notice
   # 匹配链接
   urlPatterns: /system/*,/monitor/*,/tool/*
+
+# 固定路径
+linux:
+  # svs分析转小图存储路径
+  saveUrl: /home/program/path-dig/image/

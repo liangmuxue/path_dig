@@ -22,14 +22,6 @@ public class TimedTasks {
     private ISampleService sampleService;
 
 
-    public static void deleteFile(String filePath) throws IOException {
-        // Convert the URL-style path to a Path object
-        Path path = Paths.get(filePath);
-
-        // Delete the file
-        Files.delete(path);
-    }
-
     //每天晚上0点删除ai模块本地上传的svs源文件
     public void delSvs(){
         List<Sample> list =sampleService.selectNotSave();
