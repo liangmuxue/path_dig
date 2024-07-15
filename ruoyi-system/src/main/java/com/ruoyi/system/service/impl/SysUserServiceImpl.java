@@ -514,7 +514,7 @@ public class SysUserServiceImpl implements ISysUserService {
     @Override
     public SysUser detail(SysUser sysUser) {
         SysUser detail = userMapper.detail(sysUser);
-        if (detail.getLoginDate() != null) {
+        if (detail != null && detail.getLoginDate() != null) {
             detail.setPassword("");
             detail.setLoginTime(detail.getLoginDate().getTime());
         }
