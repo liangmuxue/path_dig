@@ -1,11 +1,13 @@
 package com.ruoyi.web.controller.system;
 
+import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.AjaxResult;
 import com.ruoyi.common.core.domain.entity.SysRole;
+import com.ruoyi.common.core.page.TableDataInfo;
 import com.ruoyi.framework.web.service.SysPermissionService;
 import com.ruoyi.framework.web.service.TokenService;
 import com.ruoyi.main.dto.SysRoleDTO;
@@ -59,22 +61,18 @@ public class RoleController extends BaseController {
     }
 
     @RequestMapping(value = {"/list"}, method = {RequestMethod.POST})
-    public AjaxResult list(@RequestBody SysRoleDTO roleDTO, BindingResult bindingResult) throws Exception {
-        AjaxResult success = null;
-        try {
-            PageHelper.startPage(roleDTO.getPageNum(), roleDTO.getPageSize());
-            SysRole role = new SysRole();
-            role.setRoleName(roleDTO.getRoleName());
-//            BeanUtils.copyProperties(roleDTO,role);
-            PageInfo<SysRole> sysRolePageInfo = roleService.listRoleAndResource(role, roleDTO.getPageNum(), roleDTO.getPageSize());
-            List<SysRole> list = sysRolePageInfo.getList();
-            roleService.selectRoleResourceRef(list);
-            success = AjaxResult.success(list);
-        } catch (Exception e) {
-            logger.error("查询失败{}：" + e.toString(), e);
-            success = AjaxResult.error(e.getMessage() + ",查询失败");
-        }
-        return success;
+    public Object list(@RequestBody SysRoleDTO roleDTO, BindingResult bindingResult) throws Exception {
+        PageHelper.startPage(roleDTO.getPageNum(), roleDTO.getPageSize());
+        SysRole role = new SysRole();
+        role.setRoleName(roleDTO.getRoleName());
+        PageInfo<SysRole> sysRolePageInfo = roleService.listRoleAndResource(role, roleDTO.getPageNum(), roleDTO.getPageSize());
+        List<SysRole> list = sysRolePageInfo.getList();
+        roleService.selectRoleResourceRef(list);
+        TableDataInfo dataTable = getDataTable(list);
+        JSONObject res =  (JSONObject) JSON.toJSON(dataTable);
+        res.put("totalPage",(res.getInteger("total") + roleDTO.getPageSize() - 1) / roleDTO.getPageSize());
+        return res;
+//        return getDataTable(list);
     }
 
 
@@ -105,7 +103,7 @@ public class RoleController extends BaseController {
     }
 
     @RequestMapping(value = {"/getAll"}, method = {RequestMethod.POST})
-    public AjaxResult getAll(@RequestBody  JSONObject jsonObject) throws Exception {
+    public AjaxResult getAll(@RequestBody JSONObject jsonObject) throws Exception {
         AjaxResult success = null;
         try {
             //1查超级管理员
@@ -120,7 +118,7 @@ public class RoleController extends BaseController {
     }
 
     @RequestMapping(value = {"/deleteRole"}, method = {RequestMethod.POST})
-    public AjaxResult deleteRole(@RequestBody  JSONObject jsonObject) throws Exception {
+    public AjaxResult deleteRole(@RequestBody JSONObject jsonObject) throws Exception {
         AjaxResult success = null;
         try {
             int i = roleService.deleteRoleAndResource(jsonObject);

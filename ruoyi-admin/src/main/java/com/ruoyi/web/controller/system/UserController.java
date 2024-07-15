@@ -1,5 +1,6 @@
 package com.ruoyi.web.controller.system;
 
+import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -9,6 +10,7 @@ import com.ruoyi.common.constant.UserConstants;
 import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.AjaxResult;
 import com.ruoyi.common.core.domain.entity.SysUser;
+import com.ruoyi.common.core.page.TableDataInfo;
 import com.ruoyi.common.enums.BusinessType;
 import com.ruoyi.common.exception.ServiceException;
 import com.ruoyi.common.exception.user.UserPasswordNotMatchException;
@@ -28,7 +30,10 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
@@ -55,27 +60,21 @@ public class UserController extends BaseController {
 
 
     @PostMapping("/list")
-    public AjaxResult list(@RequestBody SysUserDTO user) {
-        AjaxResult ajaxResult = null;
-        try {
-            PageHelper.startPage(user.getPageNum(), user.getPageSize());
-            SysUser sysUser = new SysUser();
-            BeanUtils.copyProperties(user, sysUser);
-            PageInfo<SysUser> sysUserPageInfo = userService.selectUserPage(sysUser, user.getPageNum(), user.getPageSize());
-            List<SysUser> list = sysUserPageInfo.getList();
-            for (SysUser su : list) {
-                if (su.getLoginDate() != null) {
-                    su.setLoginTime(su.getLoginDate().getTime());
-                }
+    public Object list(@RequestBody SysUserDTO user) {
+        PageHelper.startPage(user.getPageNum(), user.getPageSize());
+        SysUser sysUser = new SysUser();
+        BeanUtils.copyProperties(user, sysUser);
+        PageInfo<SysUser> sysUserPageInfo = userService.selectUserPage(sysUser, user.getPageNum(), user.getPageSize());
+        List<SysUser> list = sysUserPageInfo.getList();
+        for (SysUser su : list) {
+            if (su.getLoginDate() != null) {
+                su.setLoginTime(su.getLoginDate().getTime());
             }
-            ajaxResult = AjaxResult.success(list);
-        } catch (Exception e) {
-            ajaxResult = AjaxResult.error(e.getMessage());
-            logger.info("查询失败{},{}", e.toString(), e.toString());
-            return ajaxResult;
         }
-
-        return ajaxResult;
+        TableDataInfo dataTable = getDataTable(list);
+        JSONObject res =  (JSONObject) JSON.toJSON(dataTable);
+        res.put("totalPage",(res.getInteger("total") + user.getPageSize() - 1) / user.getPageSize());
+        return res;
     }
 
 
@@ -165,8 +164,8 @@ public class UserController extends BaseController {
     public AjaxResult remove(@RequestBody JSONObject jo) {
         List<Long> userIdList = jo.getJSONArray("userIds").toJavaList(Long.class);
         Long[] userIds = userIdList.toArray(new Long[userIdList.size()]);
-        if (userIds.length < 1){
-            throw  new ServiceException("删除ID不能为空");
+        if (userIds.length < 1) {
+            throw new ServiceException("删除ID不能为空");
         }
         if (ArrayUtils.contains(userIds, getUserId())) {
             return error("当前用户不能删除");
