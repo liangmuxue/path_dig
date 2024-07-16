@@ -187,4 +187,6 @@ public interface ISysRoleService
     void  selectRoleResourceRef(List<SysRole> list);
 
     int deleteRoleAndResource(JSONObject jsonObject);
+
+    SysRole getOne(SysRole role);
 }

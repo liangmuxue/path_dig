@@ -323,6 +323,13 @@ public class SysRoleServiceImpl implements ISysRoleService {
         return j;
     }
 
+    @Override
+    public SysRole getOne(SysRole role) {
+        SysRole role1 = roleMapper.selectRoleByName(role);
+
+        return role1;
+    }
+
 
     /**
      * 修改保存角色信息

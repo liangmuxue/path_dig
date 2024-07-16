@@ -15,10 +15,7 @@ import com.ruoyi.system.service.ISysRoleService;
 import com.ruoyi.system.service.ISysUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -128,6 +125,19 @@ public class RoleController extends BaseController {
             success = AjaxResult.error("删除角色失败," + e.getMessage());
         }
         return success;
+    }
+
+    @PostMapping("/checkName")
+    public AjaxResult checkLoginName(@RequestBody SysRoleDTO roleDTO) {
+        SysRole role = new SysRole();
+        role.setRoleName(roleDTO.getRoleName());
+        SysRole detail = roleService.getOne(role);
+        if (detail != null) {
+            return AjaxResult.success(1);
+        } else {
+            return AjaxResult.success(0);
+        }
+
     }
 
 }
