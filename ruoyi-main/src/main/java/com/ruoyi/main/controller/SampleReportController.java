@@ -13,6 +13,8 @@ import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
 import com.ruoyi.main.domain.ReportType;
 import com.ruoyi.main.domain.Sample;
@@ -80,10 +82,11 @@ public class SampleReportController extends BaseController
      * 查询ai诊断分析列表--多条件分页查询
      */
     @PostMapping("/pageList")
-    public TableDataInfo pageList(SampleReportDTO sampleReportDTO)
+    public TableDataInfo pageList(@RequestBody SampleReportDTO sampleReportDTO)
     {
-        startPage();
-        List<SampleReport> list = sampleReportService.selectSampleReportPageList(sampleReportDTO);
+        PageHelper.startPage(sampleReportDTO.getPageNum(), sampleReportDTO.getPageSize());
+        PageInfo<SampleReport> pageInfo = sampleReportService.selectSampleReportPageList(sampleReportDTO, sampleReportDTO.getPageNum(), sampleReportDTO.getPageSize());
+        List<SampleReport> list = pageInfo.getList();
         return getDataTable(list);
     }
 
@@ -239,7 +242,7 @@ public class SampleReportController extends BaseController
     @PostMapping("/getResult")
     public AjaxResult getResult(@RequestBody SampleReport sampleReport)
     {
-        sampleReport=sampleReportService.selectSampleReportBySamplePId(sampleReport.getSamplePid());
+        sampleReport=sampleReportService.selectSampleReportBySampleId(sampleReport.getSampleId());
         AjaxResult ajaxResult = new AjaxResult();
         try {
             // 构建请求体JSON
@@ -247,7 +250,6 @@ public class SampleReportController extends BaseController
             ObjectNode requestBody = mapper.createObjectNode();
             // 添加sampleId参数
             requestBody.put("sampleId", sampleReport.getSampleId());
-
             // 指定URL
             URL url = new URL("http://192.168.0.98:8088/receive_svs_results");
             // 创建HttpURLConnection对象
@@ -267,7 +269,6 @@ public class SampleReportController extends BaseController
                 byte[] input = requestBody.toString().getBytes("utf-8");
                 os.write(input, 0, input.length);
             }
-
             // 获取响应码
             int responseCode = conn.getResponseCode();
             System.out.println("Response Code : " + responseCode);
@@ -284,7 +285,8 @@ public class SampleReportController extends BaseController
                 System.out.println("Response Content : " + response.toString());
                 ResultRecipientVo resultRecipientVo = mapper.readValue(response.toString(), ResultRecipientVo.class);
                 //svs文件转瓦片图
-                resultRecipientVo.setDizFileUrl(extractConfiguration.getSaveUrl()+sampleReport.getSampleId()+"/"+sampleReport.getSampleId()+"/"+"_files");
+                String dziUrl = "http://192.168.0.98:8092/"+sampleReport.getSampleId()+"/"+sampleReport.getSampleId()+"_files";
+                resultRecipientVo.setDizFileUrl(dziUrl);
                 //拿到对象接收的结果
                 SampleReport report = sampleReportService.selectSampleReportBySampleId(sampleReport.getSampleId());
                 Map<String, List<int[]>> boxes = resultRecipientVo.getBoxes();
@@ -325,7 +327,7 @@ public class SampleReportController extends BaseController
                         reportTypeService.insertReportType(reportType);
                     }
                 }
-                report.setAiDiagnosis(resultRecipientVo.getCategory());
+                report.setAiDiagnosis(aiDiagnosisCode(resultRecipientVo.getCategory()));
                 report.setAiTime(System.currentTimeMillis());
                 report.setUpdateTime(report.getAiTime());
                 report.setQuality(1);//有效样本
@@ -338,6 +340,7 @@ public class SampleReportController extends BaseController
                     report.setPicOne(list.get(0).getPic());
                     report.setPicTwo(list.get(1).getPic());
                 }
+                report.setPicBig(dziUrl);
                 sampleReportService.updateSampleReport(report);//更新报告
                 // 设置 AjaxResult 的返回值
                 ajaxResult.put("code",200);
@@ -361,6 +364,25 @@ public class SampleReportController extends BaseController
     public String picUrl(String json,String sampleId,String model){
         String save = "http://192.168.0.98:8092/"+sampleId+"/"+model+"/smallPic/"+json+".jpg";
         return save;
+    }
+
+    public String aiDiagnosisCode(String aiDiagnosis){
+        String result = "";
+        if(aiDiagnosis!=null){
+            if(aiDiagnosis.equals("normal")){
+                return result = "0";
+            }
+            if(aiDiagnosis.equals("hsil")){
+                return result = "1";
+            }
+            if(aiDiagnosis.equals("lsil")){
+                return result = "2";
+            }
+            if(aiDiagnosis.equals("ais")){
+                return result = "3";
+            }
+        }
+        return null;
     }
 
     /**

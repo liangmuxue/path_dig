@@ -10,5 +10,8 @@ public class ExtractConfiguration {
     @Value("${linux.saveUrl}")
     private String saveUrl;
 
+    @Value("${ruoyi.profile}")
+    private String profile;
+
 
 }

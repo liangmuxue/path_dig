@@ -5,6 +5,8 @@ import java.io.InputStreamReader;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.ruoyi.main.domain.Sample;
 import com.ruoyi.main.dto.SampleReportDTO;
 import com.ruoyi.main.mapper.SampleMapper;
@@ -234,8 +236,10 @@ public class SampleReportServiceImpl implements ISampleReportService
     }
 
     @Override
-    public List<SampleReport> selectSampleReportPageList(SampleReportDTO sampleReportDTO) {
-        return sampleReportMapper.selectSampleReportPageList(sampleReportDTO);
+    public PageInfo<SampleReport> selectSampleReportPageList(SampleReportDTO sampleReportDTO,Integer pageNum,Integer pageSize) {
+        PageHelper.startPage(pageNum,pageSize);
+        PageInfo<SampleReport> pageInfo = new PageInfo<>(sampleReportMapper.selectSampleReportPageList(sampleReportDTO));
+        return pageInfo;
     }
 
     @Override

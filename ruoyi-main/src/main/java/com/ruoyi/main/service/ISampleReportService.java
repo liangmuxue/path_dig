@@ -1,6 +1,9 @@
 package com.ruoyi.main.service;
 
 import java.util.List;
+
+import com.github.pagehelper.PageInfo;
+import com.ruoyi.main.domain.Sample;
 import com.ruoyi.main.domain.SampleReport;
 import com.ruoyi.main.dto.SampleReportDTO;
 import com.ruoyi.main.vo.AfterUploadVo;
@@ -63,7 +66,7 @@ public interface ISampleReportService
 
     SampleReport selectSampleReportBySampleId(String sampleId);
 
-    List<SampleReport> selectSampleReportPageList(SampleReportDTO sampleReportDTO);
+    PageInfo<SampleReport> selectSampleReportPageList(SampleReportDTO sampleReportDTO,Integer pageNum,Integer pageSize);
 
     SampleReport selectSampleReportBySamplePId(Long samplePid);
 }
