@@ -287,6 +287,7 @@ public class SampleReportController extends BaseController
                 //svs文件转瓦片图
                 String dziUrl = "http://192.168.0.98:8092/"+sampleReport.getSampleId()+"/"+sampleReport.getSampleId()+"_files";
                 resultRecipientVo.setDizFileUrl(dziUrl);
+                System.out.println("resultRecipientVo.size = " + resultRecipientVo.getSize());
                 //拿到对象接收的结果
                 SampleReport report = sampleReportService.selectSampleReportBySampleId(sampleReport.getSampleId());
                 Map<String, List<int[]>> boxes = resultRecipientVo.getBoxes();
@@ -341,6 +342,7 @@ public class SampleReportController extends BaseController
                     report.setPicTwo(list.get(1).getPic());
                 }
                 report.setPicBig(dziUrl);
+                report.setSize(gson.toJson(resultRecipientVo.getSize()));
                 sampleReportService.updateSampleReport(report);//更新报告
                 // 设置 AjaxResult 的返回值
                 ajaxResult.put("code",200);

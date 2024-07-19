@@ -64,6 +64,8 @@ public class SampleReportDTO {
 
     private String picBig;
 
+    private String size;
+
    private Long startTime;
 
    private Long endTime;

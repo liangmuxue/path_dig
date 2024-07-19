@@ -149,7 +149,8 @@ public class SampleController extends BaseController
     public AjaxResult add(@RequestBody Sample sample)
     {
         sample.setDoctor(getUserId());
-        return toAjax(sampleService.insertSample(sample));
+        sampleService.insertSample(sample);
+        return AjaxResult.success(sample.getId());
     }
 
     /**

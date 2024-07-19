@@ -76,6 +76,8 @@ public class SampleReport
 
     private String picBig;
 
+    private String size;
+
     private List<ReportType> lsilList;
 
     private List<ReportType> hsilList;

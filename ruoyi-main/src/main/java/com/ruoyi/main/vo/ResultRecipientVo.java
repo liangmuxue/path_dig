@@ -10,6 +10,8 @@ public class ResultRecipientVo {
 
     private String category;
 
+    private int[] size;
+
     private Map<String, List<int[]>> boxes;
 
     private String dizFileUrl;
