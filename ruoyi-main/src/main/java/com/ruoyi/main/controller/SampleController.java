@@ -1,5 +1,8 @@
 package com.ruoyi.main.controller;
 
+import java.io.*;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -8,30 +11,41 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
+
+import com.ruoyi.main.util.ExtractConfiguration;
+import org.apache.commons.compress.archivers.ArchiveEntry;
+import org.apache.commons.compress.archivers.ArchiveInputStream;
+import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
+import org.apache.commons.compress.utils.IOUtils;
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipFile;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+
+
+import java.util.Map;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.ruoyi.common.config.RuoYiConfig;
-import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.common.utils.file.FileUploadUtils;
 import com.ruoyi.common.utils.file.FileUtils;
 import com.ruoyi.framework.config.ServerConfig;
 import com.ruoyi.main.dto.SampleDTO;
 import com.ruoyi.system.service.ISysUserService;
-import org.apache.http.util.EntityUtils;
-import org.apache.ibatis.annotations.Param;
-import org.springframework.security.access.prepost.PreAuthorize;
+import org.apache.commons.compress.archivers.ArchiveEntry;
+import org.apache.commons.compress.archivers.ArchiveInputStream;
+import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
+import org.apache.commons.compress.utils.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import com.ruoyi.common.annotation.Log;
@@ -42,8 +56,8 @@ import com.ruoyi.main.domain.Sample;
 import com.ruoyi.main.service.ISampleService;
 import com.ruoyi.common.utils.poi.ExcelUtil;
 import com.ruoyi.common.core.page.TableDataInfo;
-import org.springframework.web.multipart.MultipartFile;
-
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
 /**
  * 样本管理Controller
  * 
@@ -60,6 +74,8 @@ public class SampleController extends BaseController
     private ISysUserService sysUserService;
     @Resource
     private ServerConfig serverConfig;
+    @Resource
+    private ExtractConfiguration extractConfiguration;
     private static final String FILE_DELIMETER = ",";
 
     /**
@@ -197,7 +213,8 @@ public class SampleController extends BaseController
             // 找到了profile后的字符串起始位置
             String profileString = fileName.substring(index + searchString.length());
             System.out.println("提取的profile后的字符串为: " + profileString);
-            String path = "/home/program/path-dig/file/" + profileString;
+//            String path = "/home/program/path-dig/file/" + profileString;
+            String path = extractConfiguration.getProfile() + profileString;
 
             AjaxResult ajax = AjaxResult.success();
             ajax.put("url", url);
@@ -214,36 +231,75 @@ public class SampleController extends BaseController
     }
 
     @PostMapping("/uploads")
-    public AjaxResult uploadFiles(List<MultipartFile> files) throws Exception
+    public AjaxResult uploadFiles(MultipartFile  file) throws Exception
     {
-        try
-        {
-            // 上传文件路径
-            String filePath = RuoYiConfig.getUploadPath();
-            List<String> urls = new ArrayList<String>();
-            List<String> fileNames = new ArrayList<String>();
-            List<String> newFileNames = new ArrayList<String>();
-            List<String> originalFilenames = new ArrayList<String>();
-            for (MultipartFile file : files)
-            {
-                // 上传并返回新文件名称
-                String fileName = FileUploadUtils.upload(filePath, file);
-                String url = serverConfig.getUrl() + fileName;
-                urls.add(url);
-                fileNames.add(fileName);
-                newFileNames.add(FileUtils.getName(fileName));
-                originalFilenames.add(file.getOriginalFilename());
-            }
-            AjaxResult ajax = AjaxResult.success();
-            ajax.put("urls", StringUtils.join(urls, FILE_DELIMETER));
-            ajax.put("fileNames", StringUtils.join(fileNames, FILE_DELIMETER));
-            ajax.put("newFileNames", StringUtils.join(newFileNames, FILE_DELIMETER));
-            ajax.put("originalFilenames", StringUtils.join(originalFilenames, FILE_DELIMETER));
-            return ajax;
+        if (file.isEmpty()) {
+            return AjaxResult.error("Please select a file to upload");
         }
-        catch (Exception e)
-        {
+        String uploadDir = "C:\\Users\\DELL\\Desktop\\111\\";
+        String targetDir = "C:\\Users\\DELL\\Desktop\\111\\";
+
+        try {
+            // Save uploaded file to uploadDir
+            String originalFilename = file.getOriginalFilename();
+            String decodedFilename = new String(originalFilename.getBytes("ISO8859-1"), "UTF-8");
+            String filePath = uploadDir + decodedFilename;
+            File dest = new File(filePath);
+            file.transferTo(dest);
+
+            // Step 1: Extract files from the zip archive
+            unzip(filePath, targetDir);
+
+            // Step 2: Upload SVS files to another directory
+            String destinationDirectory = "C:\\Users\\DELL\\Desktop\\destination\\";
+            File sourceDir = new File(targetDir);
+            File destDir = new File(destinationDirectory);
+            org.apache.commons.io.FileUtils.copyDirectory(sourceDir, destDir);
+            return AjaxResult.success("Files uploaded and extracted successfully");
+        } catch (IOException e) {
+            e.printStackTrace();
             return AjaxResult.error(e.getMessage());
         }
+
     }
+
+    public void unzip(String zipFilePath, String destDirectory) throws IOException {
+        File destDir = new File(destDirectory);
+        byte[] buffer = new byte[1024];
+        try (ZipInputStream zis = new ZipInputStream(new FileInputStream(zipFilePath), Charset.forName("UTF-8"))) {
+            ZipEntry zipEntry = zis.getNextEntry();
+            while (zipEntry != null) {
+                String entryName = zipEntry.getName();
+                File newFile = new File(destDir, entryName);
+                if (zipEntry.isDirectory()) {
+                    newFile.mkdirs();
+                } else {
+                    // Ensure parent directory exists
+                    newFile.getParentFile().mkdirs();
+                    // Write file content
+                    try (FileOutputStream fos = new FileOutputStream(newFile)) {
+                        int len;
+                        while ((len = zis.read(buffer)) > 0) {
+                            fos.write(buffer, 0, len);
+                        }
+                    }
+                }
+                zis.closeEntry();
+                zipEntry = zis.getNextEntry();
+            }
+        }
+
+    }
+
+    public File newFile(File destinationDir, ZipEntry zipEntry) throws IOException {
+        File destFile = new File(destinationDir, zipEntry.getName());
+        String destDirPath = destinationDir.getCanonicalPath();
+        String destFilePath = destFile.getCanonicalPath();
+        if (!destFilePath.startsWith(destDirPath + File.separator)) {
+            throw new IOException("Entry is outside of the target directory: " + zipEntry.getName());
+        }
+        return destFile;
+    }
+
+
 }
