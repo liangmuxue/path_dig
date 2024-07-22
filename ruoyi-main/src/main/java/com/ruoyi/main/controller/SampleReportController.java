@@ -215,7 +215,9 @@ public class SampleReportController extends BaseController
         AfterUploadVo afterUploadVo = sampleReportService.insertSampleReport(sampleReport);
         if(afterUploadVo.getError()==-1){
             return AjaxResult.error("该样本没有源文件,无法分析");
-        }else if(afterUploadVo.getError()==0){//------成功
+        }else if(afterUploadVo.getError()==-2){
+            return AjaxResult.error("算法模型没有开启,请稍后再试");
+        } else if(afterUploadVo.getError()==0){//------成功
             sampleJob.setTime(System.currentTimeMillis());
             sampleJob.setState(0l);//初始状态
             sampleJob.setSampleId(sample.getSampleId());
@@ -227,7 +229,7 @@ public class SampleReportController extends BaseController
         }else if(afterUploadVo.getError()==1){
             return AjaxResult.error("文件不存在");
         }else if(afterUploadVo.getError()==2){
-            return AjaxResult.error("当前已有文件正在处理");
+            return AjaxResult.error("当前算法模型已有文件正在处理中,请稍后再试");
         }else if(afterUploadVo.getError()==3){
             return AjaxResult.error("当前状态异常");
         }

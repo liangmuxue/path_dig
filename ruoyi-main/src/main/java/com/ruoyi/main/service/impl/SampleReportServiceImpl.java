@@ -127,6 +127,10 @@ public class SampleReportServiceImpl implements ISampleReportService
         } catch (IOException e) {
             e.printStackTrace();
         }
+        if(afterUploadVo.getError()==null){
+            afterUploadVo.setError(-2);
+            return afterUploadVo;
+        }
         if(afterUploadVo.getError()==0){//文件上传成功
             if(sampleReportMapper.checkHaveReport(sampleReport)!=0){//覆盖原来的报告
                 sampleReportMapper.deleteSampleReportBySamplePid(sampleReport);
