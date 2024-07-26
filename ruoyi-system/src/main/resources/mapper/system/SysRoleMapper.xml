@@ -62,7 +62,7 @@
         </if>
         <!-- 数据范围过滤 -->
         ${params.dataScope}
-        order by r.role_sort
+        order by r.create_time desc
     </select>
 
     <select id="selectRolePermissionByUserId" parameterType="Long" resultMap="SysRoleResult">
