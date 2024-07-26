@@ -244,7 +244,7 @@ public class SampleReportController extends BaseController
     @PostMapping("/getResult")
     public AjaxResult getResult(@RequestBody SampleReport sampleReport)
     {
-        sampleReport=sampleReportService.selectSampleReportBySampleId(sampleReport.getSampleId());
+        sampleReport=sampleReportService.selectSampleReportBySamplePId(sampleReport.getSamplePid());
         AjaxResult ajaxResult = new AjaxResult();
         try {
             // 构建请求体JSON

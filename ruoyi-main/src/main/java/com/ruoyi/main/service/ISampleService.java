@@ -76,4 +76,6 @@ public interface ISampleService
     List<Sample> selectNotSave();
 
     void delSvs(Long id);
+
+    int saveAfterAnalysis(Sample sample);
 }
