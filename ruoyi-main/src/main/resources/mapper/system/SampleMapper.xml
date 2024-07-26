@@ -129,5 +129,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     <update id="delSvs">
         update sample set svs = null , save = 2 where id = #{id}
     </update>
+    <update id="saveAfterAnalysis">
+        update sample set save = 0 where id = #{id}
+    </update>
 
 </mapper>

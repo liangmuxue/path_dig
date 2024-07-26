@@ -95,6 +95,15 @@ public class SampleJobController extends BaseController
         return toAjax(sampleJobService.updateAfterStageSend(sampleJob));
     }
 
+    //给前端当前用户当前执行中任务的样本id
+    @PostMapping("/getInProgressJob")
+    public AjaxResult getInProgressJob()
+    {
+        SampleJob sampleJob = new SampleJob();
+        sampleJob.setDoctor(getUserId());
+        return AjaxResult.success(sampleJobService.getInProgressJob(sampleJob));
+    }
+
     /**
      * 新增样本分析job
      */

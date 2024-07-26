@@ -67,4 +67,6 @@ public interface SampleJobMapper
     void deleteSampleJobBySampleId(String sampleId);
 
     SampleJob selectSampleJobBySamplePid(Long id);
+
+    SampleJob getInProgressJob(SampleJob sampleJob);
 }

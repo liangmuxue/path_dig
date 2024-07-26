@@ -115,5 +115,10 @@ public class SampleJobServiceImpl implements ISampleJobService
         return sampleJobMapper.selectSampleJobBySamplePid(id);
     }
 
+    @Override
+    public SampleJob getInProgressJob(SampleJob sampleJob) {
+        return sampleJobMapper.getInProgressJob(sampleJob);
+    }
+
 
 }

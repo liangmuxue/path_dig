@@ -153,6 +153,14 @@ public class SampleController extends BaseController
         return AjaxResult.success(sample.getId());
     }
 
+    //本地上传 解析后 保存源文件
+    @PostMapping("/saveAfterAnalysis")
+    public AjaxResult saveAfterAnalysis(@RequestBody Sample sample){
+        sample.setSave(0);//本地分析完保存才使用
+        return AjaxResult.success(sampleService.updateSample(sample));
+    }
+
+
     /**
      * 新增样本管理--多个
      */

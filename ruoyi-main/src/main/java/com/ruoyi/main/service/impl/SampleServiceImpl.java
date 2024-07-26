@@ -85,8 +85,10 @@ public class SampleServiceImpl implements ISampleService
     @Override
     public int insertSample(Sample sample)
     {
-        if(sample.getType()==1){
-            sample.setSave(1);
+        if(sample.getType()==0){//只有样本库上传 直接保存
+            sample.setSave(0);
+        }else {
+            sample.setState(1); //否则 都是默认不保存的
         }
         sample.setState(0);
         sample.setRegistrationTime(System.currentTimeMillis());
@@ -272,6 +274,11 @@ public class SampleServiceImpl implements ISampleService
     @Override
     public void delSvs(Long id) {
          sampleMapper.delSvs(id);
+    }
+
+    @Override
+    public int saveAfterAnalysis(Sample sample) {
+        return sampleMapper.saveAfterAnalysis(sample);
     }
 
 

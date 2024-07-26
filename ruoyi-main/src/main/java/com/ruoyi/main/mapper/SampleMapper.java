@@ -70,4 +70,6 @@ public interface SampleMapper
     void delSvs(Long id);
 
     Sample selectSampleBySampleId(String sampleId);
+
+    int saveAfterAnalysis(Sample sample);
 }
