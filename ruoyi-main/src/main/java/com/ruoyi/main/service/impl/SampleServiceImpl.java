@@ -13,6 +13,7 @@ import java.util.Date;
 import java.util.List;
 
 import com.ruoyi.common.utils.poi.ExcelUtil;
+import com.ruoyi.main.mapper.SampleReportMapper;
 import com.ruoyi.system.service.ISysUserService;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
@@ -51,6 +52,8 @@ public class SampleServiceImpl implements ISampleService
     private ISysUserService sysUserService;
     @Resource
     private ServerConfig serverConfig;
+    @Resource
+    private SampleReportMapper sampleReportMapper;
 
     /**
      * 查询样本管理
@@ -88,9 +91,9 @@ public class SampleServiceImpl implements ISampleService
         if(sample.getType()==0){//只有样本库上传 直接保存
             sample.setSave(0);
         }else {
-            sample.setState(1); //否则 都是默认不保存的
+            sample.setSave(1); //否则 都是默认不保存的
         }
-        sample.setState(0);
+        sample.setState(0);//默认报告未生成
         sample.setRegistrationTime(System.currentTimeMillis());
         int i = sampleMapper.insertSample(sample);
         sample.setSampleId("SVS"+sample.getId());
@@ -119,6 +122,7 @@ public class SampleServiceImpl implements ISampleService
     @Override
     public int deleteSampleByIds(Long[] ids)
     {
+        sampleReportMapper.deleteSampleReportBySampleIds(ids);
         return sampleMapper.deleteSampleByIds(ids);
     }
 

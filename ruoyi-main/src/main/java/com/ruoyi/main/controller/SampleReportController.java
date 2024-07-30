@@ -87,6 +87,11 @@ public class SampleReportController extends BaseController
         PageHelper.startPage(sampleReportDTO.getPageNum(), sampleReportDTO.getPageSize());
         PageInfo<SampleReport> pageInfo = sampleReportService.selectSampleReportPageList(sampleReportDTO, sampleReportDTO.getPageNum(), sampleReportDTO.getPageSize());
         List<SampleReport> list = pageInfo.getList();
+        list.stream().forEach(a->{
+            if(a.getVerifyDoctor()!=null){
+                a.setVerifyDoctorName(sysUserService.selectUserById(a.getVerifyDoctor()).getNickName());
+            }
+        });
         return getDataTable(list);
     }
 

@@ -69,4 +69,6 @@ public interface SampleReportMapper
     List<SampleReport> selectSampleReportPageList(SampleReportDTO sampleReportDTO);
 
     SampleReport selectSampleReportBySamplePId(Long samplePid);
+
+    void deleteSampleReportBySampleIds(Long[] ids);
 }

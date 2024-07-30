@@ -153,4 +153,10 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     <delete id="deleteSampleReportBySamplePid">
         delete from sample_report where sample_pid = #{samplePid}
     </delete>
+    <delete id="deleteSampleReportBySampleIds">
+        delete from sample_report where sample_pid in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
 </mapper>
