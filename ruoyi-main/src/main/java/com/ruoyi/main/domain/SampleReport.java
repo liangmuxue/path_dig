@@ -78,6 +78,8 @@ public class SampleReport
 
     private String size;
 
+    private String disease;
+
     private List<ReportType> lsilList;
 
     private List<ReportType> hsilList;

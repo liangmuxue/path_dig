@@ -546,6 +546,12 @@ public class SampleReportController extends BaseController
             // 如果 ids 为空或者长度为0，可以根据具体情况返回错误信息或者处理逻辑
             return AjaxResult.error("未提供要删除的报告数据的ID");
         }
+        //把样本的报告恢复成未生成报告
+        for (int i = 0; i < ids.length; i++) {
+            Sample sample = sampleMapper.selectSampleById(sampleReportService.selectSampleReportById(ids[i]).getSamplePid());
+            sample.setState(0);
+            sampleMapper.updateSample(sample);
+        }
         sampleReportService.deleteSampleReportByIds(ids);
         for (int i = 0; i < ids.length; i++) {//同时删除小图
             reportTypeService.deleteReportTypeByReport(ids[i]);

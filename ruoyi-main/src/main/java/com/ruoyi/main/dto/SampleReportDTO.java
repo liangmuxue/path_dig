@@ -66,6 +66,8 @@ public class SampleReportDTO {
 
     private String size;
 
+    private String disease;
+
    private Long startTime;
 
    private Long endTime;

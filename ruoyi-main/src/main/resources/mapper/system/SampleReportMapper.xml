@@ -21,11 +21,12 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="picTwo"    column="picTwo"    />
         <result property="picBig"    column="picBig"    />
         <result property="size"    column="size"    />
+        <result property="disease"    column="disease"    />
     </resultMap>
 
     <sql id="selectSampleReportVo">
         select id, sample_pid, quality, sample_id, ai_diagnosis, doctor_diagnosis, inspect_doctor, verify_doctor, ai_time,
-               report_time, update_time, state,picOne,picTwo,picBig,size from sample_report
+               report_time, update_time, state,picOne,picTwo,picBig,size,disease from sample_report
     </sql>
 
     <select id="selectSampleReportList" parameterType="com.ruoyi.main.domain.SampleReport" resultMap="SampleReportResult">
@@ -98,6 +99,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="picTwo != null">picTwo,</if>
             <if test="picBig != null">picBig,</if>
             <if test="size != null">size,</if>
+            <if test="disease != null">disease,</if>
          </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             <if test="samplePid != null">#{samplePid},</if>
@@ -115,6 +117,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="picTwo != null">#{picTwo},</if>
             <if test="picBig != null">#{picBig},</if>
             <if test="size != null">#{size},</if>
+            <if test="disease != null">#{disease},</if>
          </trim>
     </insert>
 
@@ -136,6 +139,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="picTwo != null">picTwo = #{picTwo},</if>
             <if test="picBig != null">picBig = #{picBig},</if>
             <if test="size != null">size = #{size},</if>
+            <if test="disease != null">disease = #{disease},</if>
         </trim>
         where id = #{id}
     </update>
