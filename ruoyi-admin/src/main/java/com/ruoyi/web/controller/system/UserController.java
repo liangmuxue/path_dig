@@ -83,7 +83,7 @@ public class UserController extends BaseController {
         if (UserConstants.NOT_UNIQUE.equals(userService.checkUserNameUnique(user.getUserName()))) {
             return AjaxResult.error("新增用户'" + user.getUserName() + "'失败，登录账号已存在");
         }
-        user.setPassword("e10adc3949ba59abbe56e057f20f883e");
+        user.setPassword("Admin123");
         user.setCreateBy(getUsername());
         user.setPassword(SecurityUtils.encryptPassword(user.getPassword()));
         return AjaxResult.success(userService.insertUser(user));
