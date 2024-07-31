@@ -5,6 +5,7 @@ import com.ruoyi.common.core.domain.AjaxResult;
 import com.ruoyi.common.core.domain.entity.SysMenu;
 import com.ruoyi.common.core.domain.entity.SysUser;
 import com.ruoyi.common.core.domain.model.LoginBody;
+import com.ruoyi.common.exception.ServiceException;
 import com.ruoyi.common.utils.SecurityUtils;
 import com.ruoyi.framework.web.service.SysLoginService;
 import com.ruoyi.framework.web.service.SysPermissionService;
@@ -49,11 +50,15 @@ public class SysLoginController
     public AjaxResult login(@RequestBody LoginBody loginBody)
     {
         AjaxResult ajax = AjaxResult.success();
+        String username = loginBody.getUsername();
+        SysUser sysUser = userService.selectUserByUserName(username);
+        if (sysUser == null){
+            throw new ServiceException("用户不存在");
+        }
         // 生成令牌
         String token = loginService.login(loginBody.getUsername(), loginBody.getPassword(), loginBody.getCode(),
                 loginBody.getUuid());
-        String username = loginBody.getUsername();
-        SysUser sysUser = userService.selectUserByUserName(username);
+
         ajax.put(Constants.TOKEN, token);
         ajax.put("userName",sysUser.getUserName());
         ajax.put("userId",sysUser.getUserId());
