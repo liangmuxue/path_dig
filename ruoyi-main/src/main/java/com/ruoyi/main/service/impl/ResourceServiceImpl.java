@@ -1,9 +1,10 @@
 package com.ruoyi.main.service.impl;
 
 import com.ruoyi.common.core.domain.entity.Resource;
+import com.ruoyi.common.core.domain.entity.SysRole;
 import com.ruoyi.common.core.domain.entity.SysUser;
-import com.ruoyi.system.mapper.ResourceMapper;
 import com.ruoyi.main.service.IResourceService;
+import com.ruoyi.system.mapper.ResourceMapper;
 import com.ruoyi.system.mapper.SysRoleMapper;
 import com.ruoyi.system.mapper.SysUserMapper;
 import org.springframework.beans.BeanUtils;
@@ -95,13 +96,16 @@ public class ResourceServiceImpl implements IResourceService {
         }
 
 //        List<RoleBoxResource> allRoleBoxResourceList = null;
+        SysRole role = roleMapper.selectRoleById(detail.getRoleId());
         List<String> resourceIds = roleMapper.selectResourceIdByRoleId(detail.getRoleId());
         String join = String.join(",", resourceIds);
         Resource resource = new Resource();
         resource.setResCodes(join);
         List<Resource> resources = resourceMapper.selectResourceByCondition(resource);
         detail.setResourceList(resources);
-
+        ArrayList<SysRole> roles = new ArrayList<>();
+        roles.add(role);
+        detail.setRoles(roles);
         return detail;
     }
 }
