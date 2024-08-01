@@ -92,6 +92,7 @@ public class SampleJobController extends BaseController
     @PostMapping("/stageSend")
     public AjaxResult stageSend(@RequestBody SampleJob sampleJob)
     {
+        System.out.println("**************************** sampleJob state ****************************** = " + sampleJob.getState());
         return toAjax(sampleJobService.updateAfterStageSend(sampleJob));
     }
 

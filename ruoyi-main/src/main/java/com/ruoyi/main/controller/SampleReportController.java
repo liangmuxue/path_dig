@@ -351,6 +351,11 @@ public class SampleReportController extends BaseController
                 report.setPicBig(dziUrl);
                 report.setSize(gson.toJson(resultRecipientVo.getSize()));
                 sampleReportService.updateSampleReport(report);//更新报告
+                //报告生成后 样本的报告已生成标识改变
+                Sample sample = sampleMapper.selectSampleById(report.getSamplePid());
+                sample.setState(1);
+                sampleMapper.updateSample(sample);
+
                 // 设置 AjaxResult 的返回值
                 ajaxResult.put("code",200);
                 ajaxResult.put("msg",resultRecipientVo);
