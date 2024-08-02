@@ -88,6 +88,10 @@ public class ResourceServiceImpl implements IResourceService {
         //搜索本用户的基本信息
         SysUser detail = sysUserMapper.detail(check);
         detail.setPassword("");
+        SysRole role = roleMapper.selectRoleById(detail.getRoleId());
+        ArrayList<SysRole> roles = new ArrayList<>();
+        roles.add(role);
+        detail.setRoles(roles);
         if (detail.getRoleId() == 1){
             //超级管理员查询所有菜单
             List<Resource> resources = resourceMapper.selectResourceByCondition(new Resource());
@@ -96,16 +100,14 @@ public class ResourceServiceImpl implements IResourceService {
         }
 
 //        List<RoleBoxResource> allRoleBoxResourceList = null;
-        SysRole role = roleMapper.selectRoleById(detail.getRoleId());
+
         List<String> resourceIds = roleMapper.selectResourceIdByRoleId(detail.getRoleId());
         String join = String.join(",", resourceIds);
         Resource resource = new Resource();
         resource.setResCodes(join);
         List<Resource> resources = resourceMapper.selectResourceByCondition(resource);
         detail.setResourceList(resources);
-        ArrayList<SysRole> roles = new ArrayList<>();
-        roles.add(role);
-        detail.setRoles(roles);
+
         return detail;
     }
 }
