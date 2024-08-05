@@ -17,6 +17,7 @@ import com.ruoyi.main.domain.ReportType;
 import com.ruoyi.main.domain.Sample;
 import com.ruoyi.main.domain.SampleReport;
 import com.ruoyi.main.vo.ResultRecipientVo;
+import com.ruoyi.main.vo.StageSendVo;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -157,11 +158,12 @@ public class SampleJobController extends BaseController
                 in.close();
                 // 打印响应内容
                 System.out.println("Response Content : " + response);
-                ResultRecipientVo resultRecipientVo = mapper.readValue(response.toString(), ResultRecipientVo.class);
+                StageSendVo stageSendVo = mapper.readValue(response.toString(), StageSendVo.class);
 
                 // 设置 AjaxResult 的返回值
                 ajaxResult.put("code",200);
-                ajaxResult.put("msg",resultRecipientVo);
+                ajaxResult.put("msg",stageSendVo);
+                sampleJobService.deleteSampleJobBySampleId(sampleJob.getSampleId());
 
             } else {
                 System.out.println("POST request not worked");
