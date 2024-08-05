@@ -80,6 +80,8 @@ public class SampleReport
 
     private String disease;
 
+    private Integer done;
+
     private List<ReportType> lsilList;
 
     private List<ReportType> hsilList;

@@ -1,9 +1,22 @@
 package com.ruoyi.main.controller;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.gson.Gson;
+import com.ruoyi.main.domain.ReportType;
+import com.ruoyi.main.domain.Sample;
+import com.ruoyi.main.domain.SampleReport;
+import com.ruoyi.main.vo.ResultRecipientVo;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -103,6 +116,66 @@ public class SampleJobController extends BaseController
         SampleJob sampleJob = new SampleJob();
         sampleJob.setDoctor(getUserId());
         return AjaxResult.success(sampleJobService.getInProgressJob(sampleJob));
+    }
+
+    //取消正在分析中的任务
+    @PostMapping("/cancelDiagnosis")
+    public AjaxResult cancelDiagnosis(@RequestBody SampleJob sampleJob){
+        AjaxResult ajaxResult = new AjaxResult();
+        try {
+            // 构建请求体JSON
+            ObjectMapper mapper = new ObjectMapper();
+            ObjectNode requestBody = mapper.createObjectNode();
+            // 添加sampleId参数
+            requestBody.put("sampleId", sampleJob.getSampleId());
+            // 指定URL
+            URL url = new URL("http://192.168.0.98:8088/cancelDiagnosis");
+            // 创建HttpURLConnection对象
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            // 设置请求方法为POST
+            conn.setRequestMethod("POST");
+            // 设置请求头属性
+            conn.setRequestProperty("Content-Type", "application/json");
+            // 设置允许输出
+            conn.setDoOutput(true);
+            //有参数
+            try (OutputStream os = conn.getOutputStream()) {
+                byte[] input = requestBody.toString().getBytes("utf-8");
+                os.write(input, 0, input.length);
+            }
+            // 获取响应码
+            int responseCode = conn.getResponseCode();
+            System.out.println("Response Code : " + responseCode);
+            // 读取响应内容
+            if (responseCode == HttpURLConnection.HTTP_OK) { // 如果响应码是200
+                BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                String inputLine;
+                StringBuilder response = new StringBuilder();
+                while ((inputLine = in.readLine()) != null) {
+                    response.append(inputLine);
+                }
+                in.close();
+                // 打印响应内容
+                System.out.println("Response Content : " + response);
+                ResultRecipientVo resultRecipientVo = mapper.readValue(response.toString(), ResultRecipientVo.class);
+
+                // 设置 AjaxResult 的返回值
+                ajaxResult.put("code",200);
+                ajaxResult.put("msg",resultRecipientVo);
+
+            } else {
+                System.out.println("POST request not worked");
+                ajaxResult.put("code",responseCode);
+                ajaxResult.put("msg", "POST request failed with response code: " + responseCode);
+            }
+            // 关闭连接
+            conn.disconnect();
+        } catch (Exception e) {
+            e.printStackTrace();
+            ajaxResult.put("code", 500); // Internal server error
+            ajaxResult.put("msg", "Internal server error: " + e.getMessage());
+        }
+        return ajaxResult;
     }
 
     /**

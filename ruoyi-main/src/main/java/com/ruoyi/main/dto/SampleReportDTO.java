@@ -68,6 +68,9 @@ public class SampleReportDTO {
 
     private String disease;
 
+
+    private Integer done;
+
    private Long startTime;
 
    private Long endTime;
