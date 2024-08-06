@@ -294,6 +294,9 @@ public class SampleReportController extends BaseController
                 //svs文件转瓦片图
                 String dziUrl = "http://192.168.0.98:8092/"+sampleReport.getSampleId()+"/"+sampleReport.getSampleId()+"_files";
                 resultRecipientVo.setDizFileUrl(dziUrl);
+                //svs大图JPG
+                String fullJpgUrl = "http://192.168.0.98:8092/"+sampleReport.getSampleId()+"/full_"+sampleReport.getSampleId()+".jpg";
+                //打印一下瓦片图的size
                 System.out.println("resultRecipientVo.size = " + resultRecipientVo.getSize());
                 //拿到对象接收的结果
                 SampleReport report = sampleReportService.selectSampleReportBySampleId(sampleReport.getSampleId());
@@ -355,6 +358,7 @@ public class SampleReportController extends BaseController
                 //报告生成后 样本的报告已生成标识改变
                 Sample sample = sampleMapper.selectSampleById(report.getSamplePid());
                 sample.setState(1);
+                sample.setPic(fullJpgUrl);
                 sampleMapper.updateSample(sample);
 
                 // 设置 AjaxResult 的返回值
@@ -399,6 +403,18 @@ public class SampleReportController extends BaseController
         }
         return null;
     }
+
+
+    /**
+     * new 全部病灶结果
+     */
+    @PostMapping("/allResult")
+    public AjaxResult allResult(@RequestBody SampleReport sampleReport)
+    {
+        AjaxResult ajaxResult = new AjaxResult();
+        return ajaxResult;
+    }
+
 
     /**
      * 根据svs文件转jpg

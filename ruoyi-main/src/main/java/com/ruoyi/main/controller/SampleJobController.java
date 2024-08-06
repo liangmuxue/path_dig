@@ -159,11 +159,15 @@ public class SampleJobController extends BaseController
                 // 打印响应内容
                 System.out.println("Response Content : " + response);
                 StageSendVo stageSendVo = mapper.readValue(response.toString(), StageSendVo.class);
-
+                System.out.println("stageSendVo = " + stageSendVo.getContent());//200成功 500失败
+                if(stageSendVo.getContent().equals("200")){
+                    sampleJobService.deleteSampleJobBySampleId(sampleJob.getSampleId());
+                }else {
+                    return AjaxResult.error("取消分析任务失败");
+                }
                 // 设置 AjaxResult 的返回值
                 ajaxResult.put("code",200);
                 ajaxResult.put("msg",stageSendVo);
-                sampleJobService.deleteSampleJobBySampleId(sampleJob.getSampleId());
 
             } else {
                 System.out.println("POST request not worked");
