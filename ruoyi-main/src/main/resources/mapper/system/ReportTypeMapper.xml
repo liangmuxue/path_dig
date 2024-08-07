@@ -10,10 +10,11 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="type"    column="type"    />
         <result property="location"    column="location"    />
         <result property="pic"    column="pic"    />
+        <result property="level"    column="level"    />
     </resultMap>
 
     <sql id="selectReportTypeVo">
-        select id, report_id, type, location,pic from report_type
+        select id, report_id, type, location,pic,level,size from report_type
     </sql>
 
     <select id="selectReportTypeList" parameterType="com.ruoyi.main.domain.ReportType" resultMap="ReportTypeResult">
@@ -42,12 +43,16 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="type != null">type,</if>
             <if test="location != null">location,</if>
             <if test="pic != null">pic,</if>
+            <if test="size != null">size,</if>
+            <if test="level != null">level,</if>
          </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             <if test="reportId != null">#{reportId},</if>
             <if test="type != null">#{type},</if>
             <if test="location != null">#{location},</if>
             <if test="pic != null">#{pic},</if>
+            <if test="size != null">#{size},</if>
+            <if test="level != null">#{level},</if>
          </trim>
     </insert>
 
@@ -58,6 +63,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="type != null">type = #{type},</if>
             <if test="location != null">location = #{location},</if>
             <if test="pic != null">pic = #{pic},</if>
+            <if test="size != null">size = #{size},</if>
+            <if test="level != null">level = #{level},</if>
         </trim>
         where id = #{id}
     </update>

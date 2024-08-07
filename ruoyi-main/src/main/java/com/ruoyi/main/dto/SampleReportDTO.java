@@ -71,6 +71,8 @@ public class SampleReportDTO {
 
     private Integer done;
 
+    private String zoom;
+
    private Long startTime;
 
    private Long endTime;

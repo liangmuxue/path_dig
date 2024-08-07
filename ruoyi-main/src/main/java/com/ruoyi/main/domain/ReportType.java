@@ -34,4 +34,8 @@ public class ReportType
 
     private String pic;
 
+    private String size;
+
+    private Integer level;
+
 }

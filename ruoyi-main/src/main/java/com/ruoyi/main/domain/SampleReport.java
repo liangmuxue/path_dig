@@ -82,6 +82,8 @@ public class SampleReport
 
     private Integer done;
 
+    private String zoom;
+
     private List<ReportType> lsilList;
 
     private List<ReportType> hsilList;

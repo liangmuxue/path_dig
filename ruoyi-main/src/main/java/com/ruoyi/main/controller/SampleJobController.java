@@ -81,6 +81,9 @@ public class SampleJobController extends BaseController
     {
         Long id = requestBody.get("id");
         SampleJob sampleJob = sampleJobService.selectSampleJobBySamplePid(id);
+        if(sampleJob==null){
+            return AjaxResult.error("此样本分析任务已被删除");
+        }
         if(sampleJob.getState()==0){
             sampleJob.setStateMsg("文件正在分析");
         }
