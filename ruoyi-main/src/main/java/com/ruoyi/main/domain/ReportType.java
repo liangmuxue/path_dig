@@ -38,4 +38,6 @@ public class ReportType
 
     private Integer level;
 
+    private Integer source;
+
 }

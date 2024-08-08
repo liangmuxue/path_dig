@@ -319,6 +319,7 @@ public class SampleReportController extends BaseController
                         reportType.setPic(picUrl(json,sampleReport.getSampleId(),"lsil"));
                         reportType.setSize(gson.toJson(lsilSize));
                         reportType.setLevel(resultRecipientVo.getLevel().get("lsil"));
+                        reportType.setSource(0);
                         reportTypeService.insertReportType(reportType);
                     }
                 }
@@ -333,6 +334,7 @@ public class SampleReportController extends BaseController
                         reportType.setPic(picUrl(json,sampleReport.getSampleId(),"hsil"));
                         reportType.setSize(gson.toJson(hsilSize));
                         reportType.setLevel(resultRecipientVo.getLevel().get("hsil"));
+                        reportType.setSource(0);
                         reportTypeService.insertReportType(reportType);
                     }
                 }
@@ -347,6 +349,7 @@ public class SampleReportController extends BaseController
                         reportType.setPic(picUrl(json,sampleReport.getSampleId(),"ais"));
                         reportType.setSize(gson.toJson(lsilSize));
                         reportType.setLevel(resultRecipientVo.getLevel().get("ais"));
+                        reportType.setSource(0);
                         reportTypeService.insertReportType(reportType);
                     }
                 }
@@ -471,6 +474,9 @@ public class SampleReportController extends BaseController
                 // 打印响应内容
                 System.out.println("Response Content : " + response);
                 SmallPicVo smallPicVo = mapper.readValue(response.toString(), SmallPicVo.class);
+                int  aisLevel = smallPicVo.getLevel().get("ais");
+                int  lsilLevel = smallPicVo.getLevel().get("lsil");
+                int  hsilLevel = smallPicVo.getLevel().get("hsil");
                 //拿到对象接收的结果
                 SampleReport report = sampleReportService.selectSampleReportBySampleId(sampleReport.getSampleId());
                 Map<String, List<int[]>> boxes = smallPicVo.getBoxes();
@@ -485,7 +491,8 @@ public class SampleReportController extends BaseController
                         reportType.setLocation(json);
                         reportType.setPic(allPicUrl(json,sampleReport.getSampleId(),"lsil"));
                         reportType.setSize(gson.toJson(smallPicVo.getSize()));
-                        reportType.setLevel(0);
+                        reportType.setLevel(lsilLevel);
+                        reportType.setSource(1);
                         reportTypeService.insertReportType(reportType);
                     }
                 }
@@ -499,7 +506,8 @@ public class SampleReportController extends BaseController
                         reportType.setLocation(json);
                         reportType.setPic(allPicUrl(json,sampleReport.getSampleId(),"hsil"));
                         reportType.setSize(gson.toJson(smallPicVo.getSize()));
-                        reportType.setLevel(0);
+                        reportType.setLevel(hsilLevel);
+                        reportType.setSource(1);
                         reportTypeService.insertReportType(reportType);
                     }
                 }
@@ -513,7 +521,8 @@ public class SampleReportController extends BaseController
                         reportType.setLocation(json);
                         reportType.setPic(allPicUrl(json,sampleReport.getSampleId(),"ais"));
                         reportType.setSize(gson.toJson(smallPicVo.getSize()));
-                        reportType.setLevel(0);
+                        reportType.setLevel(aisLevel);
+                        reportType.setSource(1);
                         reportTypeService.insertReportType(reportType);
                     }
                 }

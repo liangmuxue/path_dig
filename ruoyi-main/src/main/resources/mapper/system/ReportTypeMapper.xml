@@ -11,10 +11,11 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="location"    column="location"    />
         <result property="pic"    column="pic"    />
         <result property="level"    column="level"    />
+        <result property="source"    column="source"    />
     </resultMap>
 
     <sql id="selectReportTypeVo">
-        select id, report_id, type, location,pic,level,size from report_type
+        select id, report_id, type, location,pic,level,size,source from report_type
     </sql>
 
     <select id="selectReportTypeList" parameterType="com.ruoyi.main.domain.ReportType" resultMap="ReportTypeResult">
@@ -33,7 +34,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </select>
     <select id="selectReportTypeByReportId" resultMap="ReportTypeResult">
         <include refid="selectReportTypeVo"/>
-        where report_id = #{id}
+        where report_id = #{id} and source = 1
     </select>
 
     <insert id="insertReportType" parameterType="com.ruoyi.main.domain.ReportType" useGeneratedKeys="true" keyProperty="id">
@@ -45,6 +46,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="pic != null">pic,</if>
             <if test="size != null">size,</if>
             <if test="level != null">level,</if>
+            <if test="source != null">source,</if>
          </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             <if test="reportId != null">#{reportId},</if>
@@ -53,6 +55,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="pic != null">#{pic},</if>
             <if test="size != null">#{size},</if>
             <if test="level != null">#{level},</if>
+            <if test="source != null">#{source},</if>
          </trim>
     </insert>
 
@@ -65,6 +68,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="pic != null">pic = #{pic},</if>
             <if test="size != null">size = #{size},</if>
             <if test="level != null">level = #{level},</if>
+            <if test="source != null">source = #{source},</if>
         </trim>
         where id = #{id}
     </update>
