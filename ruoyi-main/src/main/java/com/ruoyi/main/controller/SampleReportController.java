@@ -347,7 +347,7 @@ public class SampleReportController extends BaseController
                         String json = gson.toJson(box);
                         reportType.setLocation(json);
                         reportType.setPic(picUrl(json,sampleReport.getSampleId(),"ais"));
-                        reportType.setSize(gson.toJson(lsilSize));
+                        reportType.setSize(gson.toJson(aisSize));
                         reportType.setLevel(resultRecipientVo.getLevel().get("ais"));
                         reportType.setSource(0);
                         reportTypeService.insertReportType(reportType);
@@ -372,7 +372,7 @@ public class SampleReportController extends BaseController
                     }
                 }
                 report.setPicBig(dziUrl);
-                report.setSize(gson.toJson(hsilSize));//resultRecipientVo.getSize()
+                report.setSize(gson.toJson(lsilSize));//resultRecipientVo.getSize()
                 report.setDone(1);
                 report.setZoom(gson.toJson(zoom));
                 sampleReportService.updateSampleReport(report);//更新报告
