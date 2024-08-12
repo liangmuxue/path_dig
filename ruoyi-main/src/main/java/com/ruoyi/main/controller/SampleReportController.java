@@ -372,7 +372,7 @@ public class SampleReportController extends BaseController
                     }
                 }
                 report.setPicBig(dziUrl);
-                report.setSize(gson.toJson(lsilSize));//resultRecipientVo.getSize()
+                report.setSize(gson.toJson(lsilSize));//最大层级lsil
                 report.setDone(1);
                 report.setZoom(gson.toJson(zoom));
                 sampleReportService.updateSampleReport(report);//更新报告
