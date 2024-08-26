@@ -70,6 +70,7 @@ public class UserController extends BaseController {
                 su.setLoginTime(su.getLoginDate().getTime());
             }
         }
+        //..
         TableDataInfo dataTable = getDataTable(list);
         JSONObject res =  (JSONObject) JSON.toJSON(dataTable);
         res.put("totalPage",(res.getInteger("total") + user.getPageSize() - 1) / user.getPageSize());
