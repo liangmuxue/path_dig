@@ -3,18 +3,10 @@ package com.ruoyi.main.task;
 import com.ruoyi.main.domain.Sample;
 import com.ruoyi.main.service.ISampleService;
 import org.springframework.stereotype.Component;
-
-import java.io.File;
-import java.net.URI;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.io.IOException;
-
-import javax.annotation.Resource;
 import java.util.List;
-import java.net.HttpURLConnection;
-import java.net.URL;
+import java.io.File;
+import javax.annotation.Resource;
+
 @Component("testTask")
 public class TimedTasks {
 
@@ -51,6 +43,8 @@ public class TimedTasks {
             sampleService.delSvs(a.getId());
         });
     }
+
+
 
 
 }

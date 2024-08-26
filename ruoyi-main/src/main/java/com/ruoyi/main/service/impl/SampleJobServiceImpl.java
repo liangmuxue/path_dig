@@ -120,5 +120,10 @@ public class SampleJobServiceImpl implements ISampleJobService
         return sampleJobMapper.getInProgressJob(sampleJob);
     }
 
+    @Override
+    public void updateAllJobing() {
+        sampleJobMapper.updateAllJobing();
+    }
+
 
 }

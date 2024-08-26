@@ -75,6 +75,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     <update id="updateAfterStageSend">
         update sample_job set state = #{state} where sample_id = #{sampleId}
     </update>
+    <update id="updateAllJobing">
+        update sample_job set state = -1 where state in (0,1,2,3)
+    </update>
 
     <delete id="deleteSampleJobById" parameterType="Long">
         delete from sample_job where id = #{id}

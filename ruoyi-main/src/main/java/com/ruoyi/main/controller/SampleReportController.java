@@ -126,7 +126,7 @@ public class SampleReportController extends BaseController
         return AjaxResult.success(sampleReport);
     }
 
-    //send到算法识别查状态 -- 弃用
+    //send到算法识别查状态--弃用
     @PostMapping("/stageSend")
     public AjaxResult stageSend()
     {
@@ -281,6 +281,7 @@ public class SampleReportController extends BaseController
             System.out.println("Response Code : " + responseCode);
             // 读取响应内容
             if (responseCode == HttpURLConnection.HTTP_OK) { // 如果响应码是200
+                System.out.println("responseCode = " + "获取结果成功200");
                 BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
                 String inputLine;
                 StringBuilder response = new StringBuilder();
@@ -387,7 +388,7 @@ public class SampleReportController extends BaseController
                 ajaxResult.put("msg",resultRecipientVo);
 
             } else {
-                System.out.println("POST request not worked");
+                System.out.println("POST request not worked 请求失败调取结果失败");
                 ajaxResult.put("code",responseCode);
                 ajaxResult.put("msg", "POST request failed with response code: " + responseCode);
             }
@@ -428,6 +429,55 @@ public class SampleReportController extends BaseController
             }
         }
         return null;
+    }
+
+    //检测算法是否崩溃
+    @PostMapping("/sendHeath")
+    public AjaxResult sendHeath(){
+        AjaxResult ajaxResult = new AjaxResult();
+        try {
+            // 指定URL
+            URL url = new URL("http://192.168.0.98:8088/sendHeath");
+            // 创建HttpURLConnection对象
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            // 设置请求方法为POST
+            conn.setRequestMethod("POST");
+            // 设置请求头属性
+            conn.setRequestProperty("Content-Type", "application/json");
+            // 设置允许输出
+            conn.setDoOutput(true);
+            // 获取响应码
+            int responseCode = conn.getResponseCode();
+            System.out.println("Response Code : " + responseCode);
+            // 读取响应内容
+            if (responseCode == HttpURLConnection.HTTP_OK) { // 如果响应码是200
+                BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                String inputLine;
+                StringBuilder response = new StringBuilder();
+                while ((inputLine = in.readLine()) != null) {
+                    response.append(inputLine);
+                }
+                in.close();
+                // 打印响应内容
+                System.out.println("Response Content : " + response.toString());
+                // 设置 AjaxResult 的返回值
+                ajaxResult.put("code",200);
+            } else { //解析失败 心跳检测
+                System.out.println("POST request not worked");
+                ajaxResult.put("code",responseCode);
+                ajaxResult.put("msg", "POST request failed with response code: " + responseCode);
+                sampleJobService.updateAllJobing();
+            }
+            // 关闭连接
+            conn.disconnect();
+            return ajaxResult;
+        } catch (Exception e) {
+            e.printStackTrace();
+            ajaxResult.put("code", 500); // Internal server error
+            ajaxResult.put("msg", "算法分析已停止");
+            sampleJobService.updateAllJobing();
+            return ajaxResult;
+        }
     }
 
     /**

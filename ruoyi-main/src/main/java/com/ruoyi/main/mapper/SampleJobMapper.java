@@ -69,4 +69,6 @@ public interface SampleJobMapper
     SampleJob selectSampleJobBySamplePid(Long id);
 
     SampleJob getInProgressJob(SampleJob sampleJob);
+
+    void updateAllJobing();
 }
