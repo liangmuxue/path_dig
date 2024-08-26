@@ -126,7 +126,7 @@ public class SampleReportController extends BaseController
         return AjaxResult.success(sampleReport);
     }
 
-    //send到算法识别查状态--弃用
+    //send到算法识别查状态 -- 弃用
     @PostMapping("/stageSend")
     public AjaxResult stageSend()
     {
