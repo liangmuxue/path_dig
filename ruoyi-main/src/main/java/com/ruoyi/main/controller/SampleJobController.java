@@ -13,15 +13,12 @@ import javax.servlet.http.HttpServletResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.gson.Gson;
-import com.ruoyi.main.domain.ReportType;
-import com.ruoyi.main.domain.Sample;
-import com.ruoyi.main.domain.SampleReport;
+import com.ruoyi.main.domain.*;
 import com.ruoyi.main.mapper.SampleMapper;
-import com.ruoyi.main.service.IReportTypeService;
-import com.ruoyi.main.service.ISampleReportService;
-import com.ruoyi.main.service.ISampleService;
+import com.ruoyi.main.service.*;
 import com.ruoyi.main.util.ExtractConfiguration;
 import com.ruoyi.main.vo.ResultRecipientVo;
+import com.ruoyi.main.vo.SmallPicVo;
 import com.ruoyi.main.vo.StageSendVo;
 import com.ruoyi.system.service.ISysUserService;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -38,8 +35,6 @@ import com.ruoyi.common.annotation.Log;
 import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.AjaxResult;
 import com.ruoyi.common.enums.BusinessType;
-import com.ruoyi.main.domain.SampleJob;
-import com.ruoyi.main.service.ISampleJobService;
 import com.ruoyi.common.utils.poi.ExcelUtil;
 import com.ruoyi.common.core.page.TableDataInfo;
 
@@ -63,6 +58,8 @@ public class SampleJobController extends BaseController
     private SampleMapper sampleMapper;
     @Resource
     private IReportTypeService reportTypeService;
+    @Resource
+    private IBoxPointVerticesService boxPointVerticesService;
 
 
     /**
@@ -120,7 +117,7 @@ public class SampleJobController extends BaseController
         return AjaxResult.success(sampleJob);
     }
 
-    //py->java阶段更新分析任务的状态
+    //py->java阶段更新分析任务的状态 NEW
     @PostMapping("/stageSend")
     public AjaxResult stageSend(@RequestBody SampleJob sampleJob)
     {
@@ -199,7 +196,7 @@ public class SampleJobController extends BaseController
                             reportType.setPic(picUrl(json,sampleReport.getSampleId(),"lsil"));
                             reportType.setSize(gson.toJson(lsilSize));
                             reportType.setLevel(resultRecipientVo.getLevel().get("lsil"));
-                            reportType.setSource(1);
+                            reportType.setSource(0);
                             reportTypeService.insertReportType(reportType);
                         }
                     }
@@ -214,7 +211,7 @@ public class SampleJobController extends BaseController
                             reportType.setPic(picUrl(json,sampleReport.getSampleId(),"hsil"));
                             reportType.setSize(gson.toJson(hsilSize));
                             reportType.setLevel(resultRecipientVo.getLevel().get("hsil"));
-                            reportType.setSource(1);
+                            reportType.setSource(0);
                             reportTypeService.insertReportType(reportType);
                         }
                     }
@@ -229,7 +226,7 @@ public class SampleJobController extends BaseController
                             reportType.setPic(picUrl(json,sampleReport.getSampleId(),"ais"));
                             reportType.setSize(gson.toJson(aisSize));
                             reportType.setLevel(resultRecipientVo.getLevel().get("ais"));
-                            reportType.setSource(1);
+                            reportType.setSource(0);
                             reportTypeService.insertReportType(reportType);
                         }
                     }
@@ -265,18 +262,166 @@ public class SampleJobController extends BaseController
 
                     // 设置 AjaxResult 的返回值
                     ajaxResult.put("code",200);
-                    ajaxResult.put("msg",resultRecipientVo);
+                    ajaxResult.put("resultRecipientVo",resultRecipientVo);
                 } else {
-                    System.out.println("POST request not worked");
+                    System.out.println("拿到分析结果读取响应内容响应错误");
                     ajaxResult.put("code",responseCode);
-                    ajaxResult.put("msg", "读取响应内容的响应码 " + responseCode);
+                    ajaxResult.put("msg", "拿到分析结果读取响应内容的响应码 " + responseCode);
                 }
                 // 关闭连接
                 conn.disconnect();
             } catch (Exception e) {
                 e.printStackTrace();
                 ajaxResult.put("code", 500); // Internal server error
-                ajaxResult.put("msg", "Internal server error: " + e.getMessage());
+                ajaxResult.put("msg", "拿到分析结果错误" + e.getMessage());
+            }
+//            sampleReport=sampleReportService.selectSampleReportBySamplePId(sampleReport.getSamplePid());
+            //开始保存全部小图
+            try {
+                // 构建请求体JSON
+                ObjectMapper mapper = new ObjectMapper();
+                ObjectNode requestBody = mapper.createObjectNode();
+                // 添加sampleId参数
+                requestBody.put("sampleId", sampleReport.getSampleId());
+                // 指定URL
+                URL url = new URL("http://192.168.0.98:8088/saveAllSamll");
+                // 创建HttpURLConnection对象
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                // 设置请求方法为POST
+                conn.setRequestMethod("POST");
+                // 设置请求头属性
+                conn.setRequestProperty("Content-Type", "application/json");
+                // 设置允许输出
+                conn.setDoOutput(true);
+                //有参数
+                try (OutputStream os = conn.getOutputStream()) {
+                    byte[] input = requestBody.toString().getBytes("utf-8");
+                    os.write(input, 0, input.length);
+                }
+                // 获取响应码
+                int responseCode = conn.getResponseCode();
+                System.out.println("Response Code : " + responseCode);
+                // 读取响应内容
+                if (responseCode == HttpURLConnection.HTTP_OK) { // 如果响应码是200
+                    BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                    String inputLine;
+                    StringBuilder response = new StringBuilder();
+                    while ((inputLine = in.readLine()) != null) {
+                        response.append(inputLine);
+                    }
+                    in.close();
+                    // 打印响应内容
+                    System.out.println("Response Content : " + response);
+                    SmallPicVo smallPicVo = mapper.readValue(response.toString(), SmallPicVo.class);
+                    int  aisLevel = smallPicVo.getLevel().get("ais");
+                    int  lsilLevel = smallPicVo.getLevel().get("lsil");
+                    int  hsilLevel = smallPicVo.getLevel().get("hsil");
+                    //拿到对象接收的结果
+                    SampleReport report = sampleReportService.selectSampleReportBySampleId(sampleReport.getSampleId());
+                    Map<String, List<int[]>> boxes = smallPicVo.getBoxes();
+                    Map<String, List<List<List<Double>>>> verticesMap = smallPicVo.getBox_point_vertices();
+                    Gson gson = new Gson();
+                    // 打印 ais 内容
+                    System.out.println("ais:");
+                    List<List<List<Double>>> ais = verticesMap.get("ais");
+                    if (ais != null) {
+                        for (List<List<Double>> shape : ais) {
+                            System.out.println("ais--------------"+shape);
+                            BoxPointVertices boxPointVertices = new BoxPointVertices();
+                            boxPointVertices.setPoint(gson.toJson(shape));
+                            boxPointVertices.setType("ais");
+                            boxPointVertices.setReportId(report.getId());
+                            boxPointVerticesService.insertBoxPointVertices(boxPointVertices);
+                        }
+                    }
+
+                    // 打印 hsil 内容
+                    System.out.println("hsil:");
+                    List<List<List<Double>>> hsil = verticesMap.get("hsil");
+                    if (hsil != null) {
+                        for (List<List<Double>> shape : hsil) {
+                            System.out.println("hsil--------------"+shape);
+                            BoxPointVertices boxPointVertices = new BoxPointVertices();
+                            boxPointVertices.setPoint(gson.toJson(shape));
+                            boxPointVertices.setType("hsil");
+                            boxPointVertices.setReportId(report.getId());
+                            boxPointVerticesService.insertBoxPointVertices(boxPointVertices);
+                        }
+                    }
+
+                    // 打印 lsil 内容
+                    System.out.println("lsil:");
+                    List<List<List<Double>>> lsil = verticesMap.get("lsil");
+                    if (lsil != null) {
+                        for (List<List<Double>> shape : lsil) {
+                            System.out.println("lsil--------------"+shape);
+                            BoxPointVertices boxPointVertices = new BoxPointVertices();
+                            boxPointVertices.setPoint(gson.toJson(shape));
+                            boxPointVertices.setType("lsil");
+                            boxPointVertices.setReportId(report.getId());
+                            boxPointVerticesService.insertBoxPointVertices(boxPointVertices);
+                        }
+                    }
+                    List<int[]> lsilBoxes = boxes.get("lsil");
+                    if (lsilBoxes != null) {
+                        ReportType reportType = new ReportType();
+                        reportType.setType("lsil");
+                        reportType.setReportId(report.getId());
+                        for (int[] box : lsilBoxes) {
+                            String json = gson.toJson(box);
+                            reportType.setLocation(json);
+                            reportType.setPic(allPicUrl(json,sampleReport.getSampleId(),"lsil"));
+                            reportType.setSize(gson.toJson(smallPicVo.getSize()));
+                            reportType.setLevel(lsilLevel);
+                            reportType.setSource(1);
+                            reportTypeService.insertReportType(reportType);
+                        }
+                    }
+                    List<int[]> hsilBoxes = boxes.get("hsil");
+                    if (hsilBoxes != null) {
+                        ReportType reportType = new ReportType();
+                        reportType.setType("hsil");
+                        reportType.setReportId(report.getId());
+                        for (int[] box : hsilBoxes) {
+                            String json = gson.toJson(box);
+                            reportType.setLocation(json);
+                            reportType.setPic(allPicUrl(json,sampleReport.getSampleId(),"hsil"));
+                            reportType.setSize(gson.toJson(smallPicVo.getSize()));
+                            reportType.setLevel(hsilLevel);
+                            reportType.setSource(1);
+                            reportTypeService.insertReportType(reportType);
+                        }
+                    }
+                    List<int[]> aisBoxes = boxes.get("ais");
+                    if (aisBoxes != null) {
+                        ReportType reportType = new ReportType();
+                        reportType.setType("ais");
+                        reportType.setReportId(report.getId());
+                        for (int[] box : aisBoxes) {
+                            String json = gson.toJson(box);
+                            reportType.setLocation(json);
+                            reportType.setPic(allPicUrl(json,sampleReport.getSampleId(),"ais"));
+                            reportType.setSize(gson.toJson(smallPicVo.getSize()));
+                            reportType.setLevel(aisLevel);
+                            reportType.setSource(1);
+                            reportTypeService.insertReportType(reportType);
+                        }
+                    }
+                    // 设置 AjaxResult 的返回值
+                    ajaxResult.put("code",200);
+                    ajaxResult.put("smallPicVo",smallPicVo);
+
+                } else {
+                    System.out.println("拿到全部小图读取响应内容响应错误");
+                    ajaxResult.put("code",responseCode);
+                    ajaxResult.put("msg", "拿到全部小图读取响应内容的响应码 " + responseCode);
+                }
+                // 关闭连接
+                conn.disconnect();
+            } catch (Exception e) {
+                e.printStackTrace();
+                ajaxResult.put("code", 500); // Internal server error
+                ajaxResult.put("msg", "拿到全部小图错误" + e.getMessage());
             }
             return ajaxResult;
         }else {
@@ -319,7 +464,7 @@ public class SampleJobController extends BaseController
     public AjaxResult getInProgressJob()
     {
         SampleJob sampleJob = new SampleJob();
-        sampleJob.setDoctor(getUserId());
+//        sampleJob.setDoctor(getUserId());
         return AjaxResult.success(sampleJobService.getInProgressJob(sampleJob));
     }
 

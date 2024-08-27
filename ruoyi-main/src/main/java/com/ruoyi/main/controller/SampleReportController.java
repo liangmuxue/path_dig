@@ -16,11 +16,10 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
-import com.ruoyi.main.domain.ReportType;
-import com.ruoyi.main.domain.Sample;
-import com.ruoyi.main.domain.SampleJob;
+import com.ruoyi.main.domain.*;
 import com.ruoyi.main.dto.SampleReportDTO;
 import com.ruoyi.main.mapper.SampleMapper;
+import com.ruoyi.main.service.IBoxPointVerticesService;
 import com.ruoyi.main.service.IReportTypeService;
 import com.ruoyi.main.service.ISampleJobService;
 import com.ruoyi.main.util.ExtractConfiguration;
@@ -40,7 +39,6 @@ import com.ruoyi.common.annotation.Log;
 import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.AjaxResult;
 import com.ruoyi.common.enums.BusinessType;
-import com.ruoyi.main.domain.SampleReport;
 import com.ruoyi.main.service.ISampleReportService;
 import com.ruoyi.common.utils.poi.ExcelUtil;
 import com.ruoyi.common.core.page.TableDataInfo;
@@ -67,6 +65,9 @@ public class SampleReportController extends BaseController
     private ISysUserService sysUserService;
     @Resource
     private ExtractConfiguration extractConfiguration;
+    @Resource
+    private IBoxPointVerticesService boxPointVerticesService;
+
     /**
      * 查询ai诊断分析列表
      */
@@ -743,6 +744,22 @@ public class SampleReportController extends BaseController
         }else {
             sampleReport.setStateName("已审核");
         }
+        List<BoxPointVertices> boxPointVerticesList = boxPointVerticesService.selectBoxPointVerticesByReportId(sampleReport.getId());
+        List<BoxPointVertices> blsil =new ArrayList<>();
+        List<BoxPointVertices> bhsil =new ArrayList<>();
+        List<BoxPointVertices> bais =new ArrayList<>();
+        boxPointVerticesList.stream().forEach(a->{
+            if(a.getType().equals("lsil")){
+                blsil.add(a);
+            }else if(a.getType().equals("hsil")){
+                bhsil.add(a);
+            }else if(a.getType().equals("ais")){
+                bais.add(a);
+            }
+        });
+        sampleReport.setLsilPointList(blsil);
+        sampleReport.setHsilPointList(bhsil);
+        sampleReport.setAisPointList(bais);
         return AjaxResult.success(sampleReport);
     }
 

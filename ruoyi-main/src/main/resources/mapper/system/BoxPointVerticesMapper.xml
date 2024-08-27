@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.main.mapper.BoxPointVerticesMapper">
+    
+    <resultMap type="BoxPointVertices" id="BoxPointVerticesResult">
+        <result property="id"    column="id"    />
+        <result property="type"    column="type"    />
+        <result property="point"    column="point"    />
+        <result property="reportId"    column="report_id"    />
+    </resultMap>
+
+    <sql id="selectBoxPointVerticesVo">
+        select id, type, point, report_id from box_point_vertices
+    </sql>
+
+    <select id="selectBoxPointVerticesList" parameterType="BoxPointVertices" resultMap="BoxPointVerticesResult">
+        <include refid="selectBoxPointVerticesVo"/>
+        <where>  
+            <if test="type != null  and type != ''"> and type = #{type}</if>
+            <if test="point != null  and point != ''"> and point = #{point}</if>
+            <if test="reportId != null "> and report_id = #{reportId}</if>
+        </where>
+    </select>
+    
+    <select id="selectBoxPointVerticesById" parameterType="Long" resultMap="BoxPointVerticesResult">
+        <include refid="selectBoxPointVerticesVo"/>
+        where id = #{id}
+    </select>
+    <select id="selectBoxPointVerticesByReportId" resultMap="BoxPointVerticesResult">
+        <include refid="selectBoxPointVerticesVo"/>
+        where report_id = #{id}
+    </select>
+
+    <insert id="insertBoxPointVertices" parameterType="BoxPointVertices" useGeneratedKeys="true" keyProperty="id">
+        insert into box_point_vertices
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="type != null">type,</if>
+            <if test="point != null">point,</if>
+            <if test="reportId != null">report_id,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="type != null">#{type},</if>
+            <if test="point != null">#{point},</if>
+            <if test="reportId != null">#{reportId},</if>
+         </trim>
+    </insert>
+
+    <update id="updateBoxPointVertices" parameterType="BoxPointVertices">
+        update box_point_vertices
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="type != null">type = #{type},</if>
+            <if test="point != null">point = #{point},</if>
+            <if test="reportId != null">report_id = #{reportId},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteBoxPointVerticesById" parameterType="Long">
+        delete from box_point_vertices where id = #{id}
+    </delete>
+
+    <delete id="deleteBoxPointVerticesByIds" parameterType="String">
+        delete from box_point_vertices where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

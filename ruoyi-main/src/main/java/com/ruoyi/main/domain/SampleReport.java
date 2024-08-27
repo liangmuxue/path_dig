@@ -90,4 +90,10 @@ public class SampleReport
 
     private List<ReportType> aisList;
 
+    private List<BoxPointVertices> lsilPointList;
+
+    private List<BoxPointVertices> hsilPointList;
+
+    private List<BoxPointVertices> aisPointList;
+
 }
