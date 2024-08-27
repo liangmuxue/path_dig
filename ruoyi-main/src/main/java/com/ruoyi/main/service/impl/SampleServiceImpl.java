@@ -95,6 +95,7 @@ public class SampleServiceImpl implements ISampleService
         }
         sample.setState(0);//默认报告未生成
         sample.setRegistrationTime(System.currentTimeMillis());
+        sample.setWorking(0);//初始没有分析
         int i = sampleMapper.insertSample(sample);
         sample.setSampleId("SVS"+sample.getId());
         sampleMapper.updateSample(sample);
@@ -283,6 +284,11 @@ public class SampleServiceImpl implements ISampleService
     @Override
     public int saveAfterAnalysis(Sample sample) {
         return sampleMapper.saveAfterAnalysis(sample);
+    }
+
+    @Override
+    public Sample selectSampleBySampleId(String sampleId) {
+        return sampleMapper.selectSampleBySampleId(sampleId);
     }
 
 

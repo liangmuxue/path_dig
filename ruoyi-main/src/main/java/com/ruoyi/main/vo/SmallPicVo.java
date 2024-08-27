@@ -14,4 +14,5 @@ public class SmallPicVo {
 
     private Map<String, Integer> level;
 
+    private Map<String, List<List<List<Double>>>> box_point_vertices;
 }

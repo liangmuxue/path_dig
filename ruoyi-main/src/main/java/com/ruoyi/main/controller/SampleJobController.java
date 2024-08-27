@@ -16,8 +16,14 @@ import com.google.gson.Gson;
 import com.ruoyi.main.domain.ReportType;
 import com.ruoyi.main.domain.Sample;
 import com.ruoyi.main.domain.SampleReport;
+import com.ruoyi.main.mapper.SampleMapper;
+import com.ruoyi.main.service.IReportTypeService;
+import com.ruoyi.main.service.ISampleReportService;
+import com.ruoyi.main.service.ISampleService;
+import com.ruoyi.main.util.ExtractConfiguration;
 import com.ruoyi.main.vo.ResultRecipientVo;
 import com.ruoyi.main.vo.StageSendVo;
+import com.ruoyi.system.service.ISysUserService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -49,6 +55,15 @@ public class SampleJobController extends BaseController
 {
     @Resource
     private ISampleJobService sampleJobService;
+    @Resource
+    private ISampleService sampleService;
+    @Autowired
+    private ISampleReportService sampleReportService;
+    @Resource
+    private SampleMapper sampleMapper;
+    @Resource
+    private IReportTypeService reportTypeService;
+
 
     /**
      * 查询样本分析job列表
@@ -110,7 +125,193 @@ public class SampleJobController extends BaseController
     public AjaxResult stageSend(@RequestBody SampleJob sampleJob)
     {
         System.out.println("**************************** sampleJob state ****************************** = " + sampleJob.getState());
-        return toAjax(sampleJobService.updateAfterStageSend(sampleJob));
+        sampleJobService.updateAfterStageSend(sampleJob);
+        if(sampleJob.getState()==4){
+            SampleReport sampleReport = sampleReportService.selectSampleReportBySampleId(sampleJob.getSampleId());
+            sampleReport=sampleReportService.selectSampleReportBySamplePId(sampleReport.getSamplePid());
+            AjaxResult ajaxResult = new AjaxResult();
+            try {
+                // 构建请求体JSON
+                ObjectMapper mapper = new ObjectMapper();
+                ObjectNode requestBody = mapper.createObjectNode();
+                // 添加sampleId参数
+                requestBody.put("sampleId", sampleReport.getSampleId());
+                // 指定URL
+                URL url = new URL("http://192.168.0.98:8088/receive_svs_results");
+                // 创建HttpURLConnection对象
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                // 设置请求方法为POST
+                conn.setRequestMethod("POST");
+                // 设置请求头属性
+                conn.setRequestProperty("Content-Type", "application/json");
+                // 设置允许输出
+                conn.setDoOutput(true);
+                // 无参
+//            try (OutputStream os = conn.getOutputStream()) {
+//                os.flush(); // 可选的，如果没有实际的请求体内容
+//            }
+                //有参数
+                try (OutputStream os = conn.getOutputStream()) {
+                    byte[] input = requestBody.toString().getBytes("utf-8");
+                    os.write(input, 0, input.length);
+                }
+                // 获取响应码
+                int responseCode = conn.getResponseCode();
+                System.out.println("Response Code : " + responseCode);
+                // 读取响应内容
+                if (responseCode == HttpURLConnection.HTTP_OK) { // 如果响应码是200
+                    System.out.println("responseCode = " + "获取结果成功200");
+                    BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                    String inputLine;
+                    StringBuilder response = new StringBuilder();
+                    while ((inputLine = in.readLine()) != null) {
+                        response.append(inputLine);
+                    }
+                    in.close();
+                    // 打印响应内容
+                    System.out.println("Response Content : " + response.toString());
+                    ResultRecipientVo resultRecipientVo = mapper.readValue(response.toString(), ResultRecipientVo.class);
+                    //svs文件转瓦片图
+                    String dziUrl = "http://192.168.0.98:8092/"+sampleReport.getSampleId()+"/"+sampleReport.getSampleId()+"_files";
+                    resultRecipientVo.setDizFileUrl(dziUrl);
+                    //svs大图JPG
+                    String fullJpgUrl = "http://192.168.0.98:8092/"+sampleReport.getSampleId()+"/full_"+sampleReport.getSampleId()+".jpg";
+                    //打印一下瓦片图的size
+                    System.out.println("resultRecipientVo.size = " + resultRecipientVo.getSize());
+                    //zoom
+                    int[] zoom = resultRecipientVo.getZoom();
+                    //拿到对象接收的结果
+                    SampleReport report = sampleReportService.selectSampleReportBySampleId(sampleReport.getSampleId());
+                    Map<String, List<int[]>> boxes = resultRecipientVo.getBoxes();
+                    Map<String, int[]> size = resultRecipientVo.getSize();
+                    int[] lsilSize = size.get("lsil");
+                    int[] hsilSize = size.get("hsil");
+                    int[] aisSize= size.get("ais");
+                    Gson gson = new Gson();
+                    List<int[]> lsilBoxes = boxes.get("lsil");
+                    if (lsilBoxes != null) {
+                        ReportType reportType = new ReportType();
+                        reportType.setType("lsil");
+                        reportType.setReportId(report.getId());
+                        for (int[] box : lsilBoxes) {
+                            String json = gson.toJson(box);
+                            reportType.setLocation(json);
+                            reportType.setPic(picUrl(json,sampleReport.getSampleId(),"lsil"));
+                            reportType.setSize(gson.toJson(lsilSize));
+                            reportType.setLevel(resultRecipientVo.getLevel().get("lsil"));
+                            reportType.setSource(1);
+                            reportTypeService.insertReportType(reportType);
+                        }
+                    }
+                    List<int[]> hsilBoxes = boxes.get("hsil");
+                    if (hsilBoxes != null) {
+                        ReportType reportType = new ReportType();
+                        reportType.setType("hsil");
+                        reportType.setReportId(report.getId());
+                        for (int[] box : hsilBoxes) {
+                            String json = gson.toJson(box);
+                            reportType.setLocation(json);
+                            reportType.setPic(picUrl(json,sampleReport.getSampleId(),"hsil"));
+                            reportType.setSize(gson.toJson(hsilSize));
+                            reportType.setLevel(resultRecipientVo.getLevel().get("hsil"));
+                            reportType.setSource(1);
+                            reportTypeService.insertReportType(reportType);
+                        }
+                    }
+                    List<int[]> aisBoxes = boxes.get("ais");
+                    if (aisBoxes != null) {
+                        ReportType reportType = new ReportType();
+                        reportType.setType("ais");
+                        reportType.setReportId(report.getId());
+                        for (int[] box : aisBoxes) {
+                            String json = gson.toJson(box);
+                            reportType.setLocation(json);
+                            reportType.setPic(picUrl(json,sampleReport.getSampleId(),"ais"));
+                            reportType.setSize(gson.toJson(aisSize));
+                            reportType.setLevel(resultRecipientVo.getLevel().get("ais"));
+                            reportType.setSource(1);
+                            reportTypeService.insertReportType(reportType);
+                        }
+                    }
+                    report.setAiDiagnosis(aiDiagnosisCode(resultRecipientVo.getCategory()));
+                    report.setAiTime(System.currentTimeMillis());
+                    report.setUpdateTime(report.getAiTime());
+                    report.setQuality(1);//有效样本
+                    //还有两张图
+                    if(resultRecipientVo.getCategory()!=null){
+                        ReportType reportType = new ReportType();
+                        reportType.setReportId(report.getId());
+                        reportType.setType(resultRecipientVo.getCategory());
+                        List<ReportType> list = reportTypeService.selectReportTypeList(reportType);
+                        System.out.println("list = " + list.size());
+                        if(list.size()>1){
+                            report.setPicOne(list.get(0).getPic());
+                            report.setPicTwo(list.get(1).getPic());
+                        }else {
+                            report.setPicOne(list.get(0).getPic());
+                        }
+                    }
+                    report.setPicBig(dziUrl);
+                    report.setSize(gson.toJson(lsilSize));//最大层级lsil
+                    report.setDone(1);
+                    report.setZoom(gson.toJson(zoom));
+                    sampleReportService.updateSampleReport(report);//更新报告
+                    //报告生成后 样本的报告已生成标识改变
+                    Sample sample = sampleMapper.selectSampleById(report.getSamplePid());
+                    sample.setState(1);
+                    sample.setPic(fullJpgUrl);
+                    sample.setWorking(0);//恢复成未分析的状态
+                    sampleMapper.updateSample(sample);
+
+                    // 设置 AjaxResult 的返回值
+                    ajaxResult.put("code",200);
+                    ajaxResult.put("msg",resultRecipientVo);
+                } else {
+                    System.out.println("POST request not worked");
+                    ajaxResult.put("code",responseCode);
+                    ajaxResult.put("msg", "读取响应内容的响应码 " + responseCode);
+                }
+                // 关闭连接
+                conn.disconnect();
+            } catch (Exception e) {
+                e.printStackTrace();
+                ajaxResult.put("code", 500); // Internal server error
+                ajaxResult.put("msg", "Internal server error: " + e.getMessage());
+            }
+            return ajaxResult;
+        }else {
+            return AjaxResult.success();
+        }
+
+    }
+
+    public String picUrl(String json,String sampleId,String model){
+        String save = "http://192.168.0.98:8092/"+sampleId+"/"+model+"/smallPic15/"+json+".jpg";
+        return save;
+    }
+
+    public String allPicUrl(String json,String sampleId,String model){
+        String save = "http://192.168.0.98:8092/"+sampleId+"/"+model+"/smallPicAll/"+json+".jpg";
+        return save;
+    }
+
+    public String aiDiagnosisCode(String aiDiagnosis){
+        String result = "";
+        if(aiDiagnosis!=null){
+            if(aiDiagnosis.equals("normal")){
+                return result = "0";
+            }
+            if(aiDiagnosis.equals("hsil")){
+                return result = "1";
+            }
+            if(aiDiagnosis.equals("lsil")){
+                return result = "2";
+            }
+            if(aiDiagnosis.equals("ais")){
+                return result = "3";
+            }
+        }
+        return null;
     }
 
     //给前端当前用户当前执行中任务的样本id
@@ -125,6 +326,7 @@ public class SampleJobController extends BaseController
     //取消正在分析中的任务
     @PostMapping("/cancelDiagnosis")
     public AjaxResult cancelDiagnosis(@RequestBody SampleJob sampleJob){
+        Sample sample = sampleService.selectSampleBySampleId(sampleJob.getSampleId());
         AjaxResult ajaxResult = new AjaxResult();
         try {
             // 构建请求体JSON
@@ -165,6 +367,9 @@ public class SampleJobController extends BaseController
                 System.out.println("stageSendVo = " + stageSendVo.getContent());//200成功 500失败
                 if(stageSendVo.getContent().equals("200")){
                     sampleJobService.deleteSampleJobBySampleId(sampleJob.getSampleId());
+                    sample.setWorking(0);//恢复成未分析的状态
+                    sample.setState(0);
+                    sampleService.updateSample(sample);
                 }else {
                     return AjaxResult.error("取消分析任务失败");
                 }

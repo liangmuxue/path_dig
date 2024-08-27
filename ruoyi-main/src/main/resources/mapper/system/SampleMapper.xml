@@ -16,10 +16,11 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="note"    column="note"    />
         <result property="type"    column="type"    />
         <result property="save"    column="save"    />
+        <result property="working"    column="working"    />
     </resultMap>
 
     <sql id="selectSampleVo">
-        select id, sample_id, registration_time, doctor, state, pic, note,svs,svs_path,type,save from sample
+        select id, sample_id, registration_time, doctor, state, pic, note,svs,svs_path,type,save,working from sample
     </sql>
 
     <select id="selectSampleList" parameterType="com.ruoyi.main.domain.Sample" resultMap="SampleResult">
@@ -33,6 +34,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="note != null  and note != ''"> and note = #{note}</if>
             <if test="type != null  and type != ''"> and type = #{type}</if>
             <if test="save != null  and save != ''"> and save = #{save}</if>
+            <if test="working != null  and working != ''"> and working = #{working}</if>
         </where>
         order by registration_time desc
     </select>
@@ -84,6 +86,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="svsPath != null">svs_path,</if>
             <if test="type != null">type,</if>
             <if test="save != null">save,</if>
+            <if test="working != null">working,</if>
          </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             <if test="sampleId != null">#{sampleId},</if>
@@ -96,6 +99,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="svs != null">#{svs},</if>
             <if test="type != null">#{type},</if>
             <if test="save != null">#{save},</if>
+            <if test="working != null">#{working},</if>
          </trim>
     </insert>
 
@@ -112,6 +116,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="svsPath != null">svs_Path = #{svsPath},</if>
             <if test="type != null">type = #{type},</if>
             <if test="save != null">save = #{save},</if>
+            <if test="working != null">working = #{working},</if>
         </trim>
         where id = #{id}
     </update>

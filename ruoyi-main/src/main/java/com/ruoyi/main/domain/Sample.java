@@ -64,4 +64,7 @@ public class Sample
     /** 保存源文件 1不保存 */
     private Integer save;
 
+    /** 样本是否在分析中 0没在分析 1分析中*/
+    private Integer working;
+
 }

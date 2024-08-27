@@ -78,4 +78,6 @@ public interface ISampleService
     void delSvs(Long id);
 
     int saveAfterAnalysis(Sample sample);
+
+    Sample selectSampleBySampleId(String sampleId);
 }
