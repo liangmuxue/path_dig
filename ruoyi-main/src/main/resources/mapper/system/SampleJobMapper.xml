@@ -40,7 +40,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </select>
     <select id="getInProgressJob" resultMap="SampleJobResult">
         <include refid="selectSampleJobVo"/>
-       where doctor = #{doctor} and state in (0,1,2,3)
+       where state in (0,1,2,3)
     </select>
 
     <insert id="insertSampleJob" parameterType="com.ruoyi.main.domain.SampleJob" useGeneratedKeys="true" keyProperty="id">
