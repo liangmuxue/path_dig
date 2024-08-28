@@ -125,5 +125,10 @@ public class SampleJobServiceImpl implements ISampleJobService
         sampleJobMapper.updateAllJobing();
     }
 
+    @Override
+    public List<SampleJob> selectSampleJobing() {
+        return sampleJobMapper.selectSampleJobing();
+    }
+
 
 }

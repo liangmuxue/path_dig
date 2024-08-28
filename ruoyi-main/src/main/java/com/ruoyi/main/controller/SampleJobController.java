@@ -7,6 +7,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 
@@ -21,6 +22,7 @@ import com.ruoyi.main.vo.ResultRecipientVo;
 import com.ruoyi.main.vo.SmallPicVo;
 import com.ruoyi.main.vo.StageSendVo;
 import com.ruoyi.system.service.ISysUserService;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -60,6 +62,8 @@ public class SampleJobController extends BaseController
     private IReportTypeService reportTypeService;
     @Resource
     private IBoxPointVerticesService boxPointVerticesService;
+    @Resource
+    private RedisTemplate redisTemplate;
 
 
     /**
@@ -458,6 +462,57 @@ public class SampleJobController extends BaseController
         }
         return null;
     }
+
+    //查能不能上传to解析的
+    @PostMapping("/canUpload")
+    public AjaxResult canUpload(@RequestBody Map<Object, Object> map) {
+        AjaxResult ajaxResult = new AjaxResult();
+        String code = map.get("code") != null ? map.get("code").toString() : null;
+        // 检查 Redis 中是否存在指定的 key
+        Boolean hasKey = redisTemplate.hasKey("canUpload");
+        if (hasKey != null && !hasKey) {
+            // 如果不存在，则设置 key 的值为 "0" 并设置存活时间为 20 分钟
+            redisTemplate.opsForValue().set("canUpload", "0");
+            redisTemplate.expire("canUpload", 20, TimeUnit.MINUTES);
+        }
+        if (code != null) {
+            // 修改 Redis 中 "canUpload" 键的值
+            redisTemplate.opsForValue().set("canUpload", code);
+            redisTemplate.expire("canUpload", 20, TimeUnit.MINUTES);
+            String value = redisTemplate.opsForValue().get("canUpload").toString();
+            ajaxResult.put("msg","Key was created and set to 0 with 20 minutes expiration.");
+            ajaxResult.put("code",value);
+            return ajaxResult;
+        } else {
+            // 如果存在，则获取当前 key 的值
+            String value = redisTemplate.opsForValue().get("canUpload").toString();
+            // 返回当前值
+            ajaxResult.put("code",value);
+            return ajaxResult;
+        }
+    }
+
+//    @PostMapping("/canUpload")
+//    public AjaxResult canUpload(@RequestBody Map<Object,Object> map) {
+//        String code = map.get("code").toString();
+//        // 检查 Redis 中是否存在指定的 key
+//        Boolean hasKey = redisTemplate.hasKey("canUpload");
+//        if (hasKey != null && !hasKey) {
+//            // 如果不存在，则设置 key 的值为 "0"
+//            redisTemplate.opsForValue().set("canUpload", "0");
+//            redisTemplate.expire("canUpload", 20, TimeUnit.MINUTES);
+//        }
+//        if(code!=null){//改值
+//
+//        }else {
+//            // 如果存在，则获取当前 key 的值
+//            String value = redisTemplate.opsForValue().get("canUpload").toString();
+//            // 返回当前值
+//            return AjaxResult.success(value);
+//        }
+//
+//        return AjaxResult.success();
+//    }
 
     //给前端当前用户当前执行中任务的样本id
     @PostMapping("/getInProgressJob")
