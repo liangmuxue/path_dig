@@ -13,6 +13,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 
 import com.ruoyi.main.util.ExtractConfiguration;
+import jdk.nashorn.internal.ir.annotations.Reference;
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.ArchiveInputStream;
 import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
@@ -27,6 +28,8 @@ import java.io.OutputStream;
 
 
 import java.util.Map;
+
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -76,6 +79,9 @@ public class SampleController extends BaseController
     private ServerConfig serverConfig;
     @Resource
     private ExtractConfiguration extractConfiguration;
+    @Resource
+    private RedisTemplate redisTemplate;
+
     private static final String FILE_DELIMETER = ",";
 
     /**
@@ -206,8 +212,11 @@ public class SampleController extends BaseController
      * 通用上传请求（单个）
      */
     @PostMapping("/upload")
-    public AjaxResult uploadFile(MultipartFile file) throws Exception
+    public AjaxResult uploadFile(MultipartFile file,@RequestParam(value = "code", required = false) Integer code) throws Exception
     {
+        if (code != null && code == 1) {
+            redisTemplate.opsForValue().set("canUpload", 1);
+        }
         try
         {
             // 上传文件路径
@@ -231,10 +240,16 @@ public class SampleController extends BaseController
             ajax.put("newFileName", FileUtils.getName(fileName));
             ajax.put("originalFilename", file.getOriginalFilename());
             ajax.put("path", path);
+            if(code != null && code == 1){
+                redisTemplate.opsForValue().set("canUpload", 0);
+            }
             return ajax;
         }
         catch (Exception e)
         {
+            if(code != null && code == 1){
+                redisTemplate.opsForValue().set("canUpload", 0);
+            }
             return AjaxResult.error(e.getMessage());
         }
     }
