@@ -73,4 +73,6 @@ public interface ISampleJobService
     void updateAllJobing();
 
     List<SampleJob> selectSampleJobing();
+
+    SampleJob getInProgressJobDone();
 }

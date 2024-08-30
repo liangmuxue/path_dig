@@ -73,4 +73,6 @@ public interface SampleJobMapper
     void updateAllJobing();
 
     List<SampleJob> selectSampleJobing();
+
+    SampleJob getInProgressJobDone();
 }

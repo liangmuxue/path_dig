@@ -126,7 +126,6 @@ public class SampleJobController extends BaseController
     public AjaxResult stageSend(@RequestBody SampleJob sampleJob)
     {
         System.out.println("**************************** sampleJob state ****************************** = " + sampleJob.getState());
-        sampleJobService.updateAfterStageSend(sampleJob);
         if(sampleJob.getState()==4){
             SampleReport sampleReport = sampleReportService.selectSampleReportBySampleId(sampleJob.getSampleId());
             sampleReport=sampleReportService.selectSampleReportBySamplePId(sampleReport.getSamplePid());
@@ -427,8 +426,11 @@ public class SampleJobController extends BaseController
                 ajaxResult.put("code", 500); // Internal server error
                 ajaxResult.put("msg", "拿到全部小图错误" + e.getMessage());
             }
+            sampleJobService.updateAfterStageSend(sampleJob);
+            redisTemplate.opsForValue().set("canUpload", 0);
             return ajaxResult;
         }else {
+            sampleJobService.updateAfterStageSend(sampleJob);
             return AjaxResult.success();
         }
 
@@ -471,7 +473,6 @@ public class SampleJobController extends BaseController
         // 检查 Redis 中是否存在指定的 key
         Boolean hasKey = redisTemplate.hasKey("canUpload");
         if (hasKey != null && !hasKey) {
-            // 如果不存在，则设置 key 的值为 "0" 并设置存活时间为 20 分钟
             redisTemplate.opsForValue().set("canUpload", "0");
         }
         if (code != null) {
@@ -481,12 +482,22 @@ public class SampleJobController extends BaseController
             ajaxResult.put("code",200);
             ajaxResult.put("msg",value);
             return ajaxResult;
-        } else {
+        } else {//目前都走这个
+//            String number = redisTemplate.opsForValue().get("canUpload").toString();//1
+            SampleJob sampleJob = sampleJobService.getInProgressJob(null);//0123
+//            if(!number.equals("1")){//0
+//                if(sampleJob==null){
+//                    redisTemplate.opsForValue().set("canUpload", 0);
+//                }else {
+//                    redisTemplate.opsForValue().set("canUpload", 1);
+//                }
+//            }
             // 如果存在，则获取当前 key 的值
             String value = redisTemplate.opsForValue().get("canUpload").toString();
             // 返回当前值
             ajaxResult.put("code",200);
             ajaxResult.put("msg",value);
+            ajaxResult.put("data",sampleJob);
             return ajaxResult;
         }
     }
@@ -496,7 +507,6 @@ public class SampleJobController extends BaseController
     public AjaxResult getInProgressJob()
     {
         SampleJob sampleJob = new SampleJob();
-//        sampleJob.setDoctor(getUserId());
         return AjaxResult.success(sampleJobService.getInProgressJob(sampleJob));
     }
 

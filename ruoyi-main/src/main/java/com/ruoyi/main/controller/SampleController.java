@@ -34,6 +34,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -80,7 +81,7 @@ public class SampleController extends BaseController
     @Resource
     private ExtractConfiguration extractConfiguration;
     @Resource
-    private RedisTemplate redisTemplate;
+    private  RedisTemplate redisTemplate;
 
     private static final String FILE_DELIMETER = ",";
 
@@ -206,15 +207,15 @@ public class SampleController extends BaseController
         return toAjax(sampleService.deleteSampleByIds(ids));
     }
 
-
-
     /**
      * 通用上传请求（单个）
      */
     @PostMapping("/upload")
     public AjaxResult uploadFile(MultipartFile file,@RequestParam(value = "code", required = false) Integer code) throws Exception
     {
+        AjaxResult ajax = new AjaxResult();
         if (code != null && code == 1) {
+            System.out.println("code ======================================= " + 1);
             redisTemplate.opsForValue().set("canUpload", 1);
         }
         try
@@ -234,25 +235,92 @@ public class SampleController extends BaseController
 //            String path = "/home/program/path-dig/file/" + profileString;
             String path = extractConfiguration.getProfile() + profileString;
 
-            AjaxResult ajax = AjaxResult.success();
             ajax.put("url", url);
             ajax.put("fileName", fileName);
             ajax.put("newFileName", FileUtils.getName(fileName));
             ajax.put("originalFilename", file.getOriginalFilename());
             ajax.put("path", path);
-            if(code != null && code == 1){
-                redisTemplate.opsForValue().set("canUpload", 0);
-            }
-            return ajax;
+            ajax.put("code",200);
+        } catch (Exception e) {
+            System.err.println("File upload error: " + e.getMessage()); // 增加调试输出
+            ajax = AjaxResult.error(e.getMessage());
         }
-        catch (Exception e)
-        {
-            if(code != null && code == 1){
-                redisTemplate.opsForValue().set("canUpload", 0);
-            }
-            return AjaxResult.error(e.getMessage());
-        }
+
+//        finally {
+//            // 在finally块中处理canUpload的状态更新，确保在任何情况下都能正确设置
+//            if (code != null && code == 1) {
+//                redisTemplate.opsForValue().set("canUpload", 0);
+//                long endTime = System.currentTimeMillis(); // 获取结束时间
+//                long elapsedTime = endTime - startTime; // 计算运行时间
+//                System.out.println("运行时间: " + elapsedTime + " 毫秒");
+//            }
+//        }
+        return ajax;
     }
+
+
+//    @PostMapping("/upload")
+//    public AjaxResult uploadFile(MultipartFile file, @RequestParam(value = "code", required = false) Integer code) throws Exception {
+//        AjaxResult ajax = new AjaxResult();
+//        long startTime = 0;
+//        String lockKey = "upload_lock";
+//
+//        if (code != null && code == 1) {
+//            startTime = System.currentTimeMillis(); // 获取开始时间
+//
+//            // 尝试获取 Redis 锁
+//            boolean lockAcquired = acquireLock(lockKey, 30000); // 锁定 30 秒
+//            if (!lockAcquired) {
+//                return AjaxResult.error("Upload is currently locked. Please try again later.");
+//            }
+//
+//            try {
+//                redisTemplate.opsForValue().set("canUpload", 1);
+//
+//                // 上传文件路径
+//                String filePath = RuoYiConfig.getUploadPath();
+//                // 上传并返回新文件名称
+//                String fileName = FileUploadUtils.upload(filePath, file);
+//                String url = serverConfig.getUrl() + fileName;
+//
+//                // 找到profile后面的字符串
+//                String searchString = "profile/";
+//                int index = fileName.indexOf(searchString);
+//                // 找到了profile后的字符串起始位置
+//                String profileString = fileName.substring(index + searchString.length());
+//                System.out.println("提取的profile后的字符串为: " + profileString);
+//                String path = extractConfiguration.getProfile() + profileString;
+//
+//                ajax.put("url", url);
+//                ajax.put("fileName", fileName);
+//                ajax.put("newFileName", FileUtils.getName(fileName));
+//                ajax.put("originalFilename", file.getOriginalFilename());
+//                ajax.put("path", path);
+//            } catch (Exception e) {
+//                System.err.println("File upload error: " + e.getMessage()); // 增加调试输出
+//                ajax = AjaxResult.error(e.getMessage());
+//            } finally {
+//                // 在finally块中处理canUpload的状态更新和释放锁
+//                redisTemplate.opsForValue().set("canUpload", 0);
+//                releaseLock(lockKey);
+//                long endTime = System.currentTimeMillis(); // 获取结束时间
+//                long elapsedTime = endTime - startTime; // 计算运行时间
+//                System.out.println("运行时间: " + elapsedTime + " 毫秒");
+//            }
+//        }
+//        return ajax;
+//    }
+
+    private boolean acquireLock(String lockKey, long timeout) {
+        // 尝试获取锁
+        return Boolean.TRUE.equals(redisTemplate.opsForValue().setIfAbsent(lockKey, "locked", timeout, TimeUnit.MILLISECONDS));
+    }
+
+    private void releaseLock(String lockKey) {
+        // 释放锁
+        redisTemplate.delete(lockKey);
+    }
+
 
     @PostMapping("/uploads")
     public AjaxResult uploadFiles(MultipartFile  file) throws Exception
