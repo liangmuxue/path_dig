@@ -207,17 +207,19 @@ public class SampleController extends BaseController
         return toAjax(sampleService.deleteSampleByIds(ids));
     }
 
+    @PostMapping("/lockUpload")
+    public AjaxResult lockUpload(){
+        redisTemplate.opsForValue().set("canUpload", 1);
+        return AjaxResult.success("上锁成功");
+    }
+
     /**
      * 通用上传请求（单个）
      */
     @PostMapping("/upload")
-    public AjaxResult uploadFile(MultipartFile file,@RequestParam(value = "code", required = false) Integer code) throws Exception
+    public AjaxResult uploadFile(MultipartFile file) throws Exception
     {
         AjaxResult ajax = new AjaxResult();
-        if (code != null && code == 1) {
-            System.out.println("code ======================================= " + 1);
-            redisTemplate.opsForValue().set("canUpload", 1);
-        }
         try
         {
             // 上传文件路径

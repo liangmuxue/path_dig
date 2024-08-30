@@ -428,6 +428,7 @@ public class SampleJobController extends BaseController
             }
             sampleJobService.updateAfterStageSend(sampleJob);
             redisTemplate.opsForValue().set("canUpload", 0);
+            System.out.println("redis拿取结果释放 ========================================== " + 0);
             return ajaxResult;
         }else {
             sampleJobService.updateAfterStageSend(sampleJob);
@@ -558,6 +559,8 @@ public class SampleJobController extends BaseController
                     sample.setState(0);
                     sampleService.updateSample(sample);
                 }else {
+                    redisTemplate.opsForValue().set("canUpload", 0);
+                    System.out.println("*************************redis取消任务释放*****************************");
                     return AjaxResult.error("取消分析任务失败");
                 }
                 // 设置 AjaxResult 的返回值
@@ -576,6 +579,8 @@ public class SampleJobController extends BaseController
             ajaxResult.put("code", 500); // Internal server error
             ajaxResult.put("msg", "服务异常取消分析任务失败" + e.getMessage());
         }
+        redisTemplate.opsForValue().set("canUpload", 0);
+        System.out.println("*************************redis取消任务释放*****************************");
         return ajaxResult;
     }
 

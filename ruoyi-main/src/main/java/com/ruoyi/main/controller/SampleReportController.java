@@ -27,6 +27,7 @@ import com.ruoyi.main.vo.*;
 import com.ruoyi.system.service.ISysUserService;
 import org.apache.poi.ss.usermodel.ConditionalFormattingThreshold;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -67,6 +68,8 @@ public class SampleReportController extends BaseController
     private ExtractConfiguration extractConfiguration;
     @Resource
     private IBoxPointVerticesService boxPointVerticesService;
+    @Resource
+    private RedisTemplate redisTemplate;
 
     /**
      * 查询ai诊断分析列表
@@ -466,6 +469,7 @@ public class SampleReportController extends BaseController
                 ajaxResult.put("code",responseCode);
                 ajaxResult.put("msg", "POST request failed with response code: " + responseCode);
                 sampleJobService.updateAllJobing();
+                redisTemplate.opsForValue().set("canUpload", 0);
             }
             // 关闭连接
             conn.disconnect();
@@ -475,6 +479,7 @@ public class SampleReportController extends BaseController
             ajaxResult.put("code", 500); // Internal server error
             ajaxResult.put("msg", "算法分析已停止");
             sampleJobService.updateAllJobing();
+            redisTemplate.opsForValue().set("canUpload", 0);
             return ajaxResult;
         }
     }

@@ -4,6 +4,7 @@ import com.ruoyi.main.domain.Sample;
 import com.ruoyi.main.domain.SampleJob;
 import com.ruoyi.main.service.ISampleJobService;
 import com.ruoyi.main.service.ISampleService;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
 import java.io.BufferedReader;
@@ -24,6 +25,8 @@ public class TimedTasks {
     private ISampleService sampleService;
     @Resource
     private ISampleJobService sampleJobService;
+    @Resource
+    private RedisTemplate redisTemplate;
 
     //每天晚上0点删除ai模块本地上传的svs源文件
     public void delSvs(){
@@ -94,6 +97,8 @@ public class TimedTasks {
                     sampleService.updateSample(sample);
                 });
                 sampleJobService.updateAllJobing();
+                System.out.println("redis定时任务释放 ========================================== " + 0);
+                redisTemplate.opsForValue().set("canUpload", 0);
             }
             // 关闭连接
             conn.disconnect();
@@ -107,6 +112,8 @@ public class TimedTasks {
                 sampleService.updateSample(sample);
             });
             sampleJobService.updateAllJobing();
+            System.out.println("redis定时任务释放 ========================================== " + 0);
+            redisTemplate.opsForValue().set("canUpload", 0);
             System.out.println("检查算法模型崩溃: " + e);
         }
     }
