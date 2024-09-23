@@ -169,7 +169,7 @@ public class SampleJobController extends BaseController
                     }
                     in.close();
                     // 打印响应内容
-                    System.out.println("Response Content : " + response.toString());
+                    System.out.println("拿取分析结果***********Response Content : " + response.toString());
                     ResultRecipientVo resultRecipientVo = mapper.readValue(response.toString(), ResultRecipientVo.class);
                     //svs文件转瓦片图
                     String dziUrl = "http://192.168.0.98:8092/"+sampleReport.getSampleId()+"/"+sampleReport.getSampleId()+"_files";
@@ -238,7 +238,7 @@ public class SampleJobController extends BaseController
                     report.setUpdateTime(report.getAiTime());
                     report.setQuality(1);//有效样本
                     //还有两张图
-                    if(resultRecipientVo.getCategory()!=null){
+                    if(resultRecipientVo.getCategory()!=null&&!resultRecipientVo.getCategory().equals("normal")){
                         ReportType reportType = new ReportType();
                         reportType.setReportId(report.getId());
                         reportType.setType(resultRecipientVo.getCategory());

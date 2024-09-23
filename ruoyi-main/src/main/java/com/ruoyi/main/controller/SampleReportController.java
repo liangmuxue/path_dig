@@ -237,6 +237,8 @@ public class SampleReportController extends BaseController
             sample.setWorking(1);//改为分析中的状态
             sample.setState(2);//改为报告生产中的状态
             sampleMapper.updateSample(sample);
+            redisTemplate.opsForValue().set("canUpload", "1");//上锁
+            System.out.println("******样本库上传上redisd锁*****");
             return AjaxResult.success("文件上传成功");
         }else if(afterUploadVo.getError()==1){
             return AjaxResult.error("文件不存在");
